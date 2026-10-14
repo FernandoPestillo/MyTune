@@ -13,7 +13,10 @@ class PitchSmoother {
     fun reset() { count = 0; position = 0; previous = null }
 
     fun smooth(frequency: Double): Double {
-        previous?.let { if (abs(TuningCalculator.cents(frequency, it)) > 80) reset() }
+        previous?.let {
+            if (TuningCalculator.note(frequency).midi != TuningCalculator.note(it).midi ||
+                abs(TuningCalculator.cents(frequency, it)) > 80) reset()
+        }
         history[position] = frequency
         position = (position + 1) % history.size
         count = (count + 1).coerceAtMost(history.size)

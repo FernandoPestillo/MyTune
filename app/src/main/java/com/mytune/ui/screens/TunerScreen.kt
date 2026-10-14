@@ -5,13 +5,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.mytune.domain.audio.SignalQuality
 import com.mytune.domain.model.*
 import com.mytune.presentation.TunerUiState
+import com.mytune.presentation.ReadingStatus
 import com.mytune.ui.components.*
 import com.mytune.ui.theme.*
 
@@ -61,7 +67,8 @@ private fun Header() {
 
 @Composable
 private fun TunerPanel(state: TunerUiState) {
-    Column(Modifier.fillMaxWidth()
+    val readingAlpha by animateFloatAsState(if (state.readingStatus == ReadingStatus.STALE) .55f else 1f, label = "readingAlpha")
+    Column(Modifier.fillMaxWidth().testTag("tunerPanel")
         .background(Brush.verticalGradient(listOf(Panel, Background)), RoundedCornerShape(24.dp))
         .border(1.dp, Muted.copy(alpha = .12f), RoundedCornerShape(24.dp))
         .padding(horizontal = 22.dp, vertical = 18.dp)) {
@@ -70,29 +77,40 @@ private fun TunerPanel(state: TunerUiState) {
             Text("${state.selectedString.number}ª CORDA · ${state.selectedString.label}", fontSize = 10.sp,
                 color = Orange, letterSpacing = 1.sp)
         }
-        NoteDisplay(state)
-        TuningIndicator(state.result)
+        Column(Modifier.fillMaxWidth().graphicsLayer { alpha = readingAlpha }) {
+            NoteDisplay(state)
+            TuningIndicator(state.result)
+        }
         Spacer(Modifier.height(17.dp))
         val status = when {
             !state.hasPermission -> "Microfone necessário"
             state.error != null -> "Captação interrompida"
             !state.microphoneActive -> "Preparando microfone"
             state.result?.status == TuningStatus.IN_TUNE -> "Afinada"
-            state.result?.status == TuningStatus.WRONG_NOTE -> "Nota diferente da corda selecionada"
+            state.result?.status == TuningStatus.WRONG_NOTE ->
+                (if (state.result.cents < 0) "Aperte a corda" else "Afrouxe a corda") + " · Nota diferente da corda selecionada"
             state.result?.status == TuningStatus.FLAT -> "Aperte a corda"
             state.result?.status == TuningStatus.SHARP -> "Afrouxe a corda"
             state.signalQuality == SignalQuality.UNRELIABLE -> "Toque uma corda por vez"
             else -> "Aguardando áudio"
         }
-        Text(status, Modifier.align(Alignment.CenterHorizontally),
-            color = if (state.result?.status == TuningStatus.IN_TUNE) Green else if (state.result != null) Orange else Muted,
-            fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        val messages = listOf("Microfone necessário", "Captação interrompida", "Preparando microfone",
+            "Afinada", "Aperte a corda · Nota diferente da corda selecionada",
+            "Afrouxe a corda · Nota diferente da corda selecionada", "Aperte a corda", "Afrouxe a corda",
+            "Toque uma corda por vez", "Aguardando áudio")
+        val staleSuffix = " · Sem atualização"
+        StableText(if (state.readingStatus == ReadingStatus.STALE) status + staleSuffix else status,
+            messages + messages.map { it + staleSuffix },
+            TextStyle(color = if (state.readingStatus == ReadingStatus.STALE) Muted else
+                if (state.result?.status == TuningStatus.IN_TUNE) Green else if (state.result != null) Orange else Muted,
+                fontSize = 13.sp, fontWeight = FontWeight.Medium),
+            Modifier.fillMaxWidth().testTag("tuningStatus"))
     }
 }
 
 @Composable
 private fun GuitarSection(state: TunerUiState, onSelect: (GuitarStringNote) -> Unit, height: Dp) {
-    Column {
+    Column(Modifier.testTag("guitarSection")) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text("E STANDARD", color = Foreground, fontSize = 10.sp, letterSpacing = 1.4.sp)
             Text("A4  440 Hz", color = Muted, fontSize = 10.sp)

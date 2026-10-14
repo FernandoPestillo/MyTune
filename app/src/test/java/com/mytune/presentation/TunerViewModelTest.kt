@@ -35,12 +35,15 @@ class TunerViewModelTest {
         model = TunerViewModel(source, PitchDetector { samples, _ ->
             if (samples[0] == 0f) PitchDetection() else
                 PitchDetection(samples[0].toDouble(), .99, .2, SignalQuality.PITCHED)
-        })
+        }, nowMs = { dispatcher.scheduler.currentTime })
     }
     @After fun teardown() { model.stop(); Dispatchers.resetMain() }
     private fun frame(frequency: Double) { source.frames.trySend(floatArrayOf(frequency.toFloat())).getOrThrow() }
+    private fun modelTest(block: suspend TestScope.() -> Unit) = runTest(dispatcher) {
+        try { block() } finally { model.stop(); runCurrent() }
+    }
 
-    @Test fun `selecting a string changes exact target and clears previous result`() = runTest(dispatcher) {
+    @Test fun `selecting a string changes exact target and clears previous result`() = modelTest {
         model.start(true); runCurrent()
         frame(StandardTuning.strings[0].frequency); runCurrent()
         assertEquals(TuningStatus.IN_TUNE, model.uiState.value.result?.status)
@@ -54,29 +57,109 @@ class TunerViewModelTest {
         model.stop(); runCurrent()
     }
 
-    @Test fun `rapid selections remain manual and next frame uses latest target`() = runTest(dispatcher) {
+    @Test fun `rapid selections remain manual and next frame uses latest target`() = modelTest {
         model.start(true); runCurrent()
         StandardTuning.strings.forEach(model::selectString)
         frame(StandardTuning.strings.last().frequency); runCurrent()
         assertEquals(1, model.uiState.value.selectedString.number)
         assertEquals(TuningStatus.IN_TUNE, model.uiState.value.result?.status)
-        frame(110.0); runCurrent()
+        repeat(2) { frame(110.0); runCurrent() }
         assertEquals(1, model.uiState.value.selectedString.number)
         assertEquals(TuningStatus.WRONG_NOTE, model.uiState.value.result?.status)
         model.stop(); runCurrent()
     }
 
-    @Test fun `silence clears stale pitch and level`() = runTest(dispatcher) {
+    @Test fun `brief silence preserves pitch but updates raw signal and level`() = modelTest {
         model.start(true); runCurrent()
-        frame(82.41); runCurrent()
+        frame(80.0); runCurrent()
+        val result = model.uiState.value.result
         frame(0.0); runCurrent()
-        assertNull(model.uiState.value.result)
+        advanceTimeBy(300); runCurrent()
+        assertEquals(result, model.uiState.value.result)
+        // 80 Hz is just below the E2 semitone boundary; keep the real note identity.
+        assertEquals(TuningStatus.WRONG_NOTE, model.uiState.value.result?.status)
+        assertTrue(model.uiState.value.result!!.cents < 0)
+        assertEquals(ReadingStatus.HELD, model.uiState.value.readingStatus)
         assertEquals(0f, model.uiState.value.audioLevel)
         assertEquals(SignalQuality.SILENCE, model.uiState.value.signalQuality)
         model.stop(); runCurrent()
     }
 
-    @Test fun `permission denial and granting again control capture`() = runTest(dispatcher) {
+    @Test fun `clock holds fades and expires pitch even if no more buffers arrive`() = modelTest {
+        model.start(true); runCurrent()
+        frame(80.0); runCurrent()
+        val result = model.uiState.value.result
+        advanceTimeBy(1000); runCurrent()
+        assertEquals(result, model.uiState.value.result)
+        assertEquals(ReadingStatus.HELD, model.uiState.value.readingStatus)
+        advanceTimeBy(200); runCurrent()
+        assertEquals(result, model.uiState.value.result)
+        assertEquals(ReadingStatus.STALE, model.uiState.value.readingStatus)
+        advanceTimeBy(600); runCurrent()
+        assertNull(model.uiState.value.result)
+        assertEquals(ReadingStatus.ABSENT, model.uiState.value.readingStatus)
+        assertTrue(model.uiState.value.microphoneActive)
+        model.stop(); runCurrent()
+    }
+
+    @Test fun `new detection during hold refreshes without empty result`() = modelTest {
+        model.start(true); runCurrent()
+        frame(80.5); runCurrent()
+        advanceTimeBy(1300); runCurrent()
+        frame(81.0); runCurrent()
+        assertNotNull(model.uiState.value.result)
+        assertEquals(ReadingStatus.ACTIVE, model.uiState.value.readingStatus)
+        assertEquals(1300L, model.uiState.value.lastValidDetectionMs)
+        advanceTimeBy(1000); runCurrent()
+        assertNotNull(model.uiState.value.result)
+        model.stop(); runCurrent()
+    }
+
+    @Test fun `prolonged silence never invents a note`() = modelTest {
+        model.start(true); runCurrent()
+        repeat(50) { frame(0.0); advanceTimeBy(100); runCurrent() }
+        assertNull(model.uiState.value.result)
+        assertEquals(ReadingStatus.ABSENT, model.uiState.value.readingStatus)
+        model.stop(); runCurrent()
+    }
+
+    @Test fun `pause cancels expiry and resume never restores old result`() = modelTest {
+        model.start(true); runCurrent()
+        frame(82.41); runCurrent()
+        model.stop(); runCurrent()
+        advanceTimeBy(3000); runCurrent()
+        assertNull(model.uiState.value.result)
+        assertNull(model.uiState.value.lastValidDetectionMs)
+        model.start(true); runCurrent()
+        assertNull(model.uiState.value.result)
+        assertEquals(1, source.owners)
+        assertEquals(1, source.maxOwners)
+        model.stop(); runCurrent()
+    }
+
+    @Test fun `capture completing normally clears active result and expiry job`() = modelTest {
+        model.start(true); runCurrent()
+        frame(82.41); runCurrent()
+        source.frames.close(); runCurrent()
+        assertFalse(model.uiState.value.microphoneActive)
+        assertNull(model.uiState.value.result)
+        advanceUntilIdle()
+    }
+
+    @Test fun `selection during detection rejects the in-flight old-string buffer`() = modelTest {
+        val changing = TunerViewModel(source, PitchDetector { _, _ ->
+            model.selectString(StandardTuning.strings[1])
+            PitchDetection(82.41, .99, .2, SignalQuality.PITCHED)
+        }, nowMs = { dispatcher.scheduler.currentTime })
+        model = changing
+        model.start(true); runCurrent()
+        frame(82.41); runCurrent()
+        assertEquals(StandardTuning.strings[1], model.uiState.value.selectedString)
+        assertNull(model.uiState.value.result)
+        model.stop(); runCurrent()
+    }
+
+    @Test fun `permission denial and granting again control capture`() = modelTest {
         model.start(false); runCurrent()
         assertEquals(0, source.owners)
         model.start(true); runCurrent()
@@ -89,7 +172,7 @@ class TunerViewModelTest {
         model.stop(); runCurrent()
     }
 
-    @Test fun `rapid pause resume releases recorder before opening another`() = runTest(dispatcher) {
+    @Test fun `rapid pause resume releases recorder before opening another`() = modelTest {
         model.start(true); runCurrent()
         model.start(true); runCurrent()
         assertEquals(1, source.owners)
@@ -102,7 +185,7 @@ class TunerViewModelTest {
         assertNull(model.uiState.value.result)
     }
 
-    @Test fun `revoked permission during capture becomes recoverable UI state`() = runTest(dispatcher) {
+    @Test fun `revoked permission during capture becomes recoverable UI state`() = modelTest {
         val failing = TunerViewModel(object : AudioCaptureSource {
             override suspend fun capture(onStarted: (Int) -> Unit, onSamples: (FloatArray, Int) -> Unit) {
                 throw SecurityException("revoked")
@@ -115,7 +198,7 @@ class TunerViewModelTest {
         failing.stop()
     }
 
-    @Test fun `capture failure is shown and permits retry`() = runTest(dispatcher) {
+    @Test fun `capture failure is shown and permits retry`() = modelTest {
         val failing = TunerViewModel(object : AudioCaptureSource {
             override suspend fun capture(onStarted: (Int) -> Unit, onSamples: (FloatArray, Int) -> Unit) {
                 throw AudioCaptureException("Microfone ocupado")
@@ -127,7 +210,7 @@ class TunerViewModelTest {
         failing.stop()
     }
 
-    @Test fun `late native startup callback cannot reactivate a paused screen`() = runTest(dispatcher) {
+    @Test fun `late native startup callback cannot reactivate a paused screen`() = modelTest {
         val ready = CompletableDeferred<Unit>()
         val late = TunerViewModel(object : AudioCaptureSource {
             override suspend fun capture(onStarted: (Int) -> Unit, onSamples: (FloatArray, Int) -> Unit) {
@@ -141,7 +224,7 @@ class TunerViewModelTest {
         assertNull(late.uiState.value.sampleRate)
     }
 
-    @Test fun `smoothing never keeps green when the actual pitch leaves tolerance`() = runTest(dispatcher) {
+    @Test fun `smoothing never keeps green when the actual pitch leaves tolerance`() = modelTest {
         model.start(true); runCurrent()
         val target = StandardTuning.strings.first().frequency
         repeat(3) { frame(target); runCurrent() }

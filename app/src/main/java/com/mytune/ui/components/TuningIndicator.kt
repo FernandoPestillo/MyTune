@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.semantics.*
@@ -21,11 +24,12 @@ import java.util.Locale
 fun TuningIndicator(result: TuningResult?) {
     val cents by animateFloatAsState((result?.cents ?: 0.0).coerceIn(-50.0, 50.0).toFloat(),
         tween(110), label = "cents")
-    val color by animateColorAsState(if (result?.status == TuningStatus.IN_TUNE) Green else Orange,
+    val pointerAlpha by animateFloatAsState(if (result == null) 0f else 1f, tween(180), label = "pointerAlpha")
+    val color by animateColorAsState(if (result == null) Muted else if (result.status == TuningStatus.IN_TUNE) Green else Orange,
         tween(180), label = "tuningColor")
     val description = result?.let { String.format(Locale.forLanguageTag("pt-BR"), "%+.1f cents", it.cents) }
         ?: "Sem detecção válida"
-    Column(Modifier.semantics { contentDescription = description }) {
+    Column(Modifier.testTag("tuningIndicator").semantics { contentDescription = description }) {
         Canvas(Modifier.fillMaxWidth().height(65.dp)) {
             val margin = 5.dp.toPx()
             val width = size.width - 2 * margin
@@ -40,22 +44,24 @@ fun TuningIndicator(result: TuningResult?) {
                     Offset(x, 22.dp.toPx()), Offset(x, (if (major) 43 else 34).dp.toPx()),
                     if (tick == 0) 2.dp.toPx() else 1.dp.toPx())
             }
-            // No pointer is drawn without a valid pitch.
-            if (result != null) {
+            // Expiration gently returns to center while fading; no idle pointer remains.
+            if (pointerAlpha > 0f) {
                 val x = center + cents / 100 * width
-                drawCircle(color.copy(alpha = 0.12f), 15.dp.toPx(), Offset(x, 10.dp.toPx()))
+                drawCircle(color.copy(alpha = 0.12f * pointerAlpha), 15.dp.toPx(), Offset(x, 10.dp.toPx()))
                 val pointer = Path().apply {
                     moveTo(x - 5.dp.toPx(), 3.dp.toPx()); lineTo(x + 5.dp.toPx(), 3.dp.toPx())
                     lineTo(x, 13.dp.toPx()); close()
                 }
-                drawPath(pointer, color)
-                drawLine(color, Offset(x, 19.dp.toPx()), Offset(x, 47.dp.toPx()), 2.dp.toPx(), StrokeCap.Round)
+                drawPath(pointer, color.copy(alpha = pointerAlpha))
+                drawLine(color.copy(alpha = pointerAlpha), Offset(x, 19.dp.toPx()), Offset(x, 47.dp.toPx()), 2.dp.toPx(), StrokeCap.Round)
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("−50", color = Muted, fontSize = 10.sp)
-            Text(if (result == null) "CENTS" else description, color = if (result == null) Muted else color, fontSize = 10.sp)
-            Text("+50", color = Muted, fontSize = 10.sp)
+            Text("−50", Modifier.weight(1f), color = Muted, fontSize = 10.sp, maxLines = 1, softWrap = false)
+            Text(if (result == null) "CENTS" else description, Modifier.weight(4f), textAlign = TextAlign.Center,
+                style = TextStyle(fontFeatureSettings = "tnum"), color = if (result == null) Muted else color,
+                fontSize = 10.sp, maxLines = 1, softWrap = false)
+            Text("+50", Modifier.weight(1f), textAlign = TextAlign.End, color = Muted, fontSize = 10.sp, maxLines = 1, softWrap = false)
         }
     }
 }
