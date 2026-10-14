@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.MyTune" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">#101113</item>
+        <item name="android:colorAccent">#FF914D</item>
+    </style>
+</resources>
