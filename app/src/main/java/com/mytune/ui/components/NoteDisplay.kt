@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,7 +64,8 @@ private fun FrequencyDisplay(state: TunerUiState, modifier: Modifier) {
             fontSize = 23.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.End,
             style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false)
         Spacer(Modifier.height(7.dp))
-        Text(state.selectedString?.let { "Alvo ${it.label} · ${hz(it.frequency)} Hz" } ?: "Alvo —", color = Muted,
-            fontSize = 11.sp, style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false)
+        Text(state.selectedString?.let { "Alvo ${it.label} · ${hz(it.frequency)} Hz" } ?: "Alvo —", Modifier.fillMaxWidth().height(with(LocalDensity.current) { 20.sp.toDp() }).testTag("targetFrequency"), color = Muted,
+            fontSize = 11.sp, textAlign = TextAlign.End, style = TextStyle(fontFeatureSettings = "tnum", lineHeight = 16.sp,
+                platformStyle = PlatformTextStyle(includeFontPadding = false)), maxLines = 1, softWrap = false)
     }
 }

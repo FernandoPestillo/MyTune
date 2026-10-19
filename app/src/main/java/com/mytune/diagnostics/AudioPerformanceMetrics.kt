@@ -2,6 +2,7 @@ package com.mytune.diagnostics
 
 import com.mytune.domain.audio.PitchDetection
 import com.mytune.domain.audio.TuningCalculator
+import com.mytune.domain.tuning.PitchFrequencyCalculator
 import kotlin.math.abs
 
 /** Opt-in aggregate diagnostics. No samples, recordings, device IDs or user data are retained.
@@ -46,7 +47,7 @@ class AudioPerformanceMetrics(
         val jump = if (hz != null && prior != null) abs(TuningCalculator.cents(hz, prior)) else 0.0
         val possibleOctave = abs(jump - 1200) < 60 || abs(jump - 2400) < 60
         val note = hz?.let(TuningCalculator::note)
-        val nearest = hz?.let { 440.0 * Math.pow(2.0, (note!!.midi - 69) / 12.0) }
+        val nearest = hz?.let { PitchFrequencyCalculator.frequency(note!!.midi) }
         val count = state.windows + 1
         state = state.copy(windows = count, valid = state.valid + if (valid) 1 else 0,
             rejected = state.rejected + if (valid) 0 else 1,

@@ -1,0 +1,10 @@
+MyTune 1.5.0 / versionCode 5
+Host: macOS arm64; JDK 17.0.17; Android SDK 36
+Android Emulator 36.4.9.0
+AVD temporário: MyTuneValidationV15; Android 16/API 36.1 arm64; imagem google_apis_playstore
+4 núcleos; RAM 4096 MB; 720x1600; densidade 280; GPU SwiftShader; sem snapshot/áudio/câmeras
+Runner direto AndroidJUnitRunner; 19/19 aprovados; 129.572 s
+Layout injetado: retrato 400x850; paisagem 850x400; tela pequena 320x640 com fonte 1.5
+Fixtures de regressão Manual/Automático usam movimento desativado; efeito testado com relógio controlado.
+Verificação adicional: MainActivity real, reinício do processo, preferências e independência de afinação.
+Nenhum celular/guitarra físico utilizado; sem medição de sensação tátil, CPU/bateria ou precisão acústica real.

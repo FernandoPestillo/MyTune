@@ -1,0 +1,16 @@
+MainActivity real; Android 16/API 36.1 arm64; 2026-10-19
+Preferências alteradas pela UI, sem injeção:
+mytune-appearance-v1
+headstock=SIX_INLINE
+theme=LIGHT
+haptics=false
+stringAnimation=false
+
+am force-stop e nova inicialização restauraram tema claro e seis controles em linha; switchs persistidos desligados.
+Coordenadas x iguais nos seis controles, verificadas pela hierarquia de acessibilidade.
+Selecionado Drop C. Alterações visuais de volta para 3+3/escuro/tátil e animação ativados preservaram bytes do arquivo de afinação:
+mytune-tunings-v1
+revision|1
+selected|ZHJvcC1j
+
+Novo force-stop/start restaurou Drop C, com preferências visuais padrão selecionadas.

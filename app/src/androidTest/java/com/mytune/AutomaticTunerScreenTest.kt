@@ -10,6 +10,7 @@ import com.mytune.domain.model.*
 import com.mytune.presentation.*
 import com.mytune.ui.screens.TunerScreen
 import com.mytune.ui.theme.MyTuneTheme
+import com.mytune.ui.components.LocalMotionEnabled
 import kotlinx.coroutines.awaitCancellation
 import org.junit.*
 import org.junit.Assert.*
@@ -37,7 +38,7 @@ class AutomaticTunerScreenTest {
     @Before fun setup() {
         compose.setContent {
             val state by model.uiState.collectAsState()
-            MyTuneTheme { TunerScreen(state, model::selectString, {}, onModeChange = model::setTuningMode) }
+            CompositionLocalProvider(LocalMotionEnabled provides false) { MyTuneTheme { TunerScreen(state, model::selectString, {}, onModeChange = model::setTuningMode) } }
         }
         compose.runOnIdle { model.start(true) }
         compose.waitUntil { source.samples != null }

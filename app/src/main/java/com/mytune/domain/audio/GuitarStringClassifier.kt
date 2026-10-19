@@ -7,13 +7,11 @@ data class StringClassifierConfig(
     val maxDeviationCents: Double = 150.0,
     val minimumConfidence: Double = .90,
     val minimumRms: Double = .0025,
-    val ambiguityMarginCents: Double = 30.0,
 ) {
     init {
         require(maxDeviationCents > 0 && maxDeviationCents.isFinite())
         require(minimumConfidence in 0.0..1.0)
         require(minimumRms > 0 && minimumRms.isFinite())
-        require(ambiguityMarginCents >= 0 && ambiguityMarginCents.isFinite())
     }
 }
 
@@ -49,7 +47,7 @@ class GuitarStringClassifier(
         }
         if (distance > config.maxDeviationCents + 1e-9)
             return StringDetectionResult(StringClassificationStatus.NO_MATCH, confidence = detection.confidence)
-        if (secondDistance <= config.maxDeviationCents + 1e-9 && secondDistance - distance <= config.ambiguityMarginCents)
+        if (secondDistance <= config.maxDeviationCents + 1e-9)
             return StringDetectionResult(StringClassificationStatus.AMBIGUOUS, confidence = detection.confidence)
         return StringDetectionResult(StringClassificationStatus.MATCH, nearest, nearestCents, detection.confidence)
     }

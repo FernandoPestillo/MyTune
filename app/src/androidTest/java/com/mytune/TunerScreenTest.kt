@@ -13,6 +13,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mytune.domain.model.*
+import com.mytune.domain.tuning.*
 import com.mytune.presentation.TunerUiState
 import com.mytune.presentation.ReadingStatus
 import com.mytune.domain.audio.SignalQuality
@@ -73,7 +74,7 @@ class TunerScreenTest {
                 }
             }
         }
-        val tags = listOf("tuningModeSelector", "tunerPanel", "noteDisplay", "tuningIndicator", "tuningStatus", "guitarSection")
+        val tags = listOf("tuningSelector", "tuningModeSelector", "tunerPanel", "tunerTargetRow", "targetFrequency", "noteDisplay", "tuningIndicator", "tuningStatus", "guitarSection")
         compose.waitForIdle()
         val original = tags.associateWith { compose.onNodeWithTag(it).getUnclippedBoundsInRoot() }
         val states = listOf(80.0, 84.0, 82.406889, 110.0, 164.813778, 69.295658, 1100.0).map {
@@ -82,7 +83,9 @@ class TunerScreenTest {
             readings[0].copy(readingStatus = ReadingStatus.HELD),
             readings[0].copy(readingStatus = ReadingStatus.STALE),
             base.copy(signalQuality = SignalQuality.UNRELIABLE), base) +
-            StandardTuning.strings.map { base.copy(selectedString = it) } + listOf(
+            StandardTuning.strings.map { base.copy(selectedString = it) } +
+            TuningPresets.all.map { base.copy(activeTuning = it, selectedString = it.string(6)) } +
+            listOf(base.copy(activeTuning = TuningValidator.custom("long", "Afinação personalizada com um nome muito longo para caber", listOf(40,45,50,55,59,64)))) + listOf(
                 base.copy(tuningMode = TuningMode.AUTOMATIC, selectedString = null),
                 base.copy(tuningMode = TuningMode.AUTOMATIC, selectedString = null,
                     automaticSelectionStatus = AutomaticSelectionStatus.CONFIRMING),
@@ -97,9 +100,9 @@ class TunerScreenTest {
         states.forEach { next ->
             compose.runOnIdle { state = next }
             compose.waitForIdle()
+            val current = tags.associateWith { compose.onNodeWithTag(it).getUnclippedBoundsInRoot() }
             tags.forEach { tag ->
-                assertEquals("$tag moved for $next", original.getValue(tag),
-                    compose.onNodeWithTag(tag).getUnclippedBoundsInRoot())
+                assertEquals("$tag tuning=${next.activeTuning.id} before=$original after=$current", original.getValue(tag), current.getValue(tag))
             }
             val textLayouts = mutableListOf<TextLayoutResult>()
             compose.onNodeWithTag("detectedFrequency").performSemanticsAction(SemanticsActions.GetTextLayoutResult) {

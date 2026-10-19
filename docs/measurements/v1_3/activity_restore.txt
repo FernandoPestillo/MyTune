@@ -1,0 +1,11 @@
+MainActivity real; Android 16/API 36.1 arm64; 2026-10-19
+Seleção pela UI: E Standard → Drop C
+Arquivo privado após seleção:
+mytune-tunings-v1
+revision|1
+selected|ZHJvcC1j
+
+am force-stop com.mytune; am start -W -n com.mytune/.MainActivity
+Afinação: Drop C restaurada; alvo manual 6ª CORDA · C2.
+Sem injeção de repositório neste teste; usado DataStore application-scoped do app.
+Seleção E Standard restaurada ao final da verificação.
