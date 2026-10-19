@@ -63,6 +63,14 @@ class DetectionStabilizer(private val config: DetectionStabilityConfig = Detecti
         return presentation
     }
 
+    /** Retains presentation without feeding a rejected/other-target pitch to its filters. */
+    fun retain(nowMs: Long): DetectionPresentation {
+        advance(nowMs)
+        candidateFrequency = null
+        candidateCount = 0
+        return hold()
+    }
+
     fun accept(detection: PitchDetection, target: GuitarStringNote, nowMs: Long): DetectionPresentation {
         advance(nowMs)
         val frequency = detection.frequency

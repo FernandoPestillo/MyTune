@@ -1,0 +1,15 @@
+suite,tests,failures,errors
+com.mytune.data.audio.AudioBufferManagerTest,1,0,0
+com.mytune.diagnostics.AudioPerformanceMetricsTest,2,0,0
+com.mytune.domain.audio.AutomaticStringSelectorTest,6,0,0
+com.mytune.domain.audio.GuitarStringClassifierTest,5,0,0
+com.mytune.domain.audio.PitchSmootherTest,2,0,0
+com.mytune.domain.audio.PrecisionReferenceTest,2,0,0
+com.mytune.domain.audio.TuningCalculatorTest,7,0,0
+com.mytune.domain.audio.YinPitchDetectorTest,10,0,0
+com.mytune.domain.audio.YinRobustnessTest,3,0,0
+com.mytune.presentation.AudioPipelineTest,2,0,0
+com.mytune.presentation.AutomaticAudioPipelineTest,1,0,0
+com.mytune.presentation.AutomaticTunerViewModelTest,10,0,0
+com.mytune.presentation.DetectionStabilizerTest,8,0,0
+com.mytune.presentation.TunerViewModelTest,15,0,0

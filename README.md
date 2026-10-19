@@ -11,7 +11,7 @@ Requisitos: Android Studio compatível com AGP 8.13, JDK **17**, Android SDK **3
 1. Abra esta pasta no Android Studio e aguarde a sincronização Gradle.
 2. Configure o SDK em `local.properties` (`sdk.dir=/caminho/do/Android/sdk`) ou pela IDE. Esse arquivo é local e ignorado pelo Git.
 3. Selecione um aparelho Android com microfone e execute a configuração `app`.
-4. Conceda a permissão solicitada, selecione uma das seis cordas e toque apenas essa corda, deixando a nota soar.
+4. Conceda a permissão solicitada. Em Manual, selecione uma das seis cordas; em Automático, basta tocar uma corda aberta por vez e aguardar a confirmação.
 
 Pelo terminal, com `JAVA_HOME` apontando para um JDK 17 e o SDK configurado:
 
@@ -23,11 +23,12 @@ adb shell am start -n com.mytune/.MainActivity
 
 O APK é gerado em `app/build/outputs/apk/debug/app-debug.apk`. O Gradle Wrapper acompanha o projeto. A primeira compilação baixa as dependências; o aplicativo instalado funciona inteiramente offline.
 
-## Versão 1.1 — Precisão e estabilidade
+## Versão 1.2 — Afinação automática
 
 - Tela escura em grafite e laranja, headstock e braço desenhados em Canvas local, seis cordas selecionáveis e indicação acessível da seleção.
 - E Standard: E2, A2, D3, G3, B3, E4. Frequências calculadas por MIDI e temperamento igual, com A4 = 440 Hz, sem arredondamento nos cálculos.
-- Nota/oitava realmente detectadas, frequência em Hz, alvo selecionado e desvio em cents. Seleção exclusivamente manual, E2 por padrão.
+- Nota/oitava realmente detectadas, frequência em Hz, alvo selecionado e desvio em cents. Modo Manual por padrão, com E2 selecionada; modo Automático identifica a corda pela frequência real e confirma sua seleção antes de atualizar o alvo.
+- Alternância Manual/Automático sem reiniciar o microfone; destaque automático em laranja, espera sem corda selecionada, retorno ao manual ao tocar na guitarra virtual. O modo permanece em memória durante pausa/retomada; não há persistência de preferência entre novas instâncias.
 - Estados de silêncio, sinal sem confiança, nota diferente, abaixo/acima do alvo e afinada. A apresentação entra em “Afinada” dentro de ±5 cents e sai ao ultrapassar ±7 cents.
 - Ponteiro animado de −50 a +50 cents, com saturação visual nos extremos; o valor numérico mantém todo o desvio. A última leitura é preservada durante interrupções breves; na expiração o ponteiro retorna ao centro e desaparece.
 - Permissão em tempo de execução, recuperação por Configurações após bloqueio, repetição após erro e indicador real de intensidade RMS.
@@ -43,11 +44,13 @@ app/src/main/java/com/mytune/
 │   ├── AudioBufferManager.kt          # buffer circular PCM
 │   └── AudioCaptureManager.kt         # AudioRecord, fila limitada e liberação em finally
 ├── domain/
-│   ├── model/                         # cordas, notas e resultado
+│   ├── model/                         # cordas, notas, modo e resultado de classificação
 │   └── audio/
 │       ├── AudioProcessingConfig.kt   # configuração YIN, janela e hop
 │       ├── PitchDetector.kt           # frequência, RMS, confiança, qualidade
 │       ├── YinPitchDetector.kt        # YIN independente do Android
+│       ├── GuitarStringClassifier.kt  # associação limitada em cents, sem alterar fundamental
+│       ├── AutomaticStringSelector.kt # confirmação temporal e histerese de seleção
 │       ├── PitchSmoother.kt           # mediana + média exponencial
 │       └── TuningCalculator.kt        # MIDI, oitavas, cents, tolerância
 ├── diagnostics/AudioPerformanceMetrics.kt # métricas opt-in, sem PCM
@@ -62,6 +65,8 @@ app/src/main/java/com/mytune/
 ```
 
 ## Decisões técnicas
+
+**Seleção automática:** `GuitarStringClassifier` usa as referências já existentes, ±150 cents, confiança ≥0,90 e qualidade/RMS válidos. `AutomaticStringSelector` exige ≥120 ms e ≥2 leituras, contadas com intervalo mínimo de 40 ms; na cadência atual normalmente são quatro janelas. Uma candidata conflitante não troca o alvo nem renova a retenção. Saltos de oitava plausíveis exigem 180 ms. Não há correção arbitrária de frequência para caber numa corda. Alvo e resultado mudam juntos após confirmação, com reset dos filtros do alvo anterior. No automático, leituras retidas/ambíguas não mostram orientação atual; o destaque some após 1800 ms. Voltar ao Manual pelo controle restaura a última escolha manual; tocar na guitarra retorna a Manual com a corda tocada.
 
 **Captura:** PCM mono de 16 bits, tentativa inicial em 44.100 Hz e fallback em 48.000 Hz. `UNPROCESSED` é usado quando o dispositivo declara suporte; se falhar, há tentativa com `VOICE_RECOGNITION`. As amostras são normalizadas em memória, sem persistência. Leituras não bloqueantes com espera cooperativa de 5 ms permitem cancelar a captura sem depender do desbloqueio de uma leitura nativa. Um mutex impede sobreposição de gravadores em pausas e retomadas rápidas.
 
@@ -93,9 +98,11 @@ Os testes usam Espresso 3.7.0 explicitamente para evitar a reflexão de `InputMa
 
 Os testes unitários exercitam as seis frequências nas duas taxas de amostragem, harmônicos dominantes, buffers sucessivos com continuidade de fase, ruído, silêncio, DC, baixa amplitude, rejeição por confiança, outras notas e oitavas, cálculo de cents, suavização, retenção/expiração com relógio virtual, histerese, rejeição de saltos isolados, seleção durante o processamento, cancelamento, retomada e recuperação de permissão/erro. Os testes instrumentados verificam as seis seleções, a independência entre nota e alvo e as posições dos componentes ao alternar leituras, silêncio e mensagens em retrato, paisagem e tela pequena com fonte ampliada. Um teste adicional abre o `AudioRecord` real, recebe buffers PCM, cancela e reabre a captura.
 
-Os sinais sintéticos e fontes de teste existem apenas em `src/test`; não integram a captura de produção. Consulte [PRECISAO_V1_1.md](docs/PRECISAO_V1_1.md) para diagnóstico, resultados antes/depois, parâmetros, métricas e comandos reproduzíveis. O roteiro físico está em [TESTES_PRECISAO_V1_1.md](docs/TESTES_PRECISAO_V1_1.md). [VALIDATION.md](docs/VALIDATION.md) conserva o histórico da versão anterior. O corpus/benchmark gera CSVs em `app/build/reports/precision/`; os snapshots desta implementação ficam em `docs/measurements/v1_1/`.
+Os sinais sintéticos e fontes de teste existem apenas nos source sets de testes; não integram a captura de produção. A versão 1.2 acrescenta classificação das seis cordas, sete desafinações, confirmação temporal, sinais inválidos/ambíguos, alternâncias, retenção e UI com os dois modos. Consulte [AFINACAO_AUTOMATICA_V1_2.md](docs/AFINACAO_AUTOMATICA_V1_2.md), [TESTES_AFINACAO_AUTOMATICA_V1_2.md](docs/TESTES_AFINACAO_AUTOMATICA_V1_2.md) e os resultados em `docs/measurements/v1_2/`. Consulte [PRECISAO_V1_1.md](docs/PRECISAO_V1_1.md) para diagnóstico, resultados antes/depois, parâmetros, métricas e comandos reproduzíveis. O roteiro físico está em [TESTES_PRECISAO_V1_1.md](docs/TESTES_PRECISAO_V1_1.md). [VALIDATION.md](docs/VALIDATION.md) conserva o histórico da versão anterior. O corpus/benchmark gera CSVs em `app/build/reports/precision/`; os snapshots desta implementação ficam em `docs/measurements/v1_1/`.
 
 ## Limitações
+
+No automático, uma corda muito desafinada ou uma nota presa que coincida com a frequência de outra corda aberta não pode ser identificada fisicamente apenas pelo fundamental. Sinais fora das faixas são rejeitados; o modo Manual continua disponível.
 
 O detector é monofônico: acordes, várias cordas soando, ruído periódico e harmônicos com fundamental ausente ou muito fraca podem produzir leituras incorretas. A confiança do YIN mede periodicidade e não identifica a origem do som. RMS e limiares estão centralizados em `YinConfig` e precisam de avaliação acústica em diferentes aparelhos; um sinal fraco pode exigir aproximar a guitarra ou um amplificador do microfone.
 
@@ -103,4 +110,4 @@ A validação definitiva de precisão, latência, fontes de áudio e comportamen
 
 ## Evolução
 
-A versão 1.1 está implementada e possui validação automatizada; a validação acústica física permanece pendente. Consulte [ROADMAP.md](docs/ROADMAP.md) para as versões futuras, de ajustes de precisão a ferramentas musicais adicionais.
+As versões 1.1 e 1.2 estão implementadas e possuem validação automatizada; a validação acústica física permanece pendente. Consulte [ROADMAP.md](docs/ROADMAP.md) para as versões futuras, de ajustes de precisão a ferramentas musicais adicionais.

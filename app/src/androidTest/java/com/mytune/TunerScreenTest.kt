@@ -36,7 +36,7 @@ class TunerScreenTest {
         for (string in StandardTuning.strings) {
             compose.onNodeWithContentDescription("${string.number}ª corda, ${string.label}")
                 .performScrollTo().performClick().assertIsSelected()
-            compose.onAllNodes(isSelected()).assertCountEquals(1)
+            compose.onAllNodes(isSelected() and hasAnyAncestor(hasTestTag("guitarSection"))).assertCountEquals(1)
             compose.onNodeWithText("${string.number}ª CORDA · ${string.label}").assertExists()
         }
         compose.onNodeWithText("— Hz").assertExists()
@@ -73,16 +73,26 @@ class TunerScreenTest {
                 }
             }
         }
-        val tags = listOf("tunerPanel", "noteDisplay", "tuningIndicator", "tuningStatus", "guitarSection")
+        val tags = listOf("tuningModeSelector", "tunerPanel", "noteDisplay", "tuningIndicator", "tuningStatus", "guitarSection")
         compose.waitForIdle()
         val original = tags.associateWith { compose.onNodeWithTag(it).getUnclippedBoundsInRoot() }
         val states = listOf(80.0, 84.0, 82.406889, 110.0, 164.813778, 69.295658, 1100.0).map {
-            base.copy(result = TuningCalculator.calculate(it, base.selectedString, .99), readingStatus = ReadingStatus.ACTIVE)
+            base.copy(result = TuningCalculator.calculate(it, base.selectedString!!, .99), readingStatus = ReadingStatus.ACTIVE)
         }.let { readings -> readings + listOf(
             readings[0].copy(readingStatus = ReadingStatus.HELD),
             readings[0].copy(readingStatus = ReadingStatus.STALE),
             base.copy(signalQuality = SignalQuality.UNRELIABLE), base) +
-            StandardTuning.strings.map { base.copy(selectedString = it) }
+            StandardTuning.strings.map { base.copy(selectedString = it) } + listOf(
+                base.copy(tuningMode = TuningMode.AUTOMATIC, selectedString = null),
+                base.copy(tuningMode = TuningMode.AUTOMATIC, selectedString = null,
+                    automaticSelectionStatus = AutomaticSelectionStatus.CONFIRMING),
+                base.copy(tuningMode = TuningMode.AUTOMATIC, selectedString = null,
+                    automaticSelectionStatus = AutomaticSelectionStatus.UNCERTAIN,
+                    stringClassification = StringDetectionResult(StringClassificationStatus.NO_MATCH)),
+                readings[2].copy(tuningMode = TuningMode.AUTOMATIC,
+                    automaticSelectionStatus = AutomaticSelectionStatus.TRACKING),
+                readings[2].copy(tuningMode = TuningMode.AUTOMATIC, readingStatus = ReadingStatus.HELD),
+                readings[2].copy(tuningMode = TuningMode.AUTOMATIC, readingStatus = ReadingStatus.STALE))
         }
         states.forEach { next ->
             compose.runOnIdle { state = next }

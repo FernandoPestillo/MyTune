@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
                         requested = true
                         permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
                     }
-                })
+                }, onModeChange = tuner::setTuningMode)
             }
         }
     }

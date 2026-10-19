@@ -48,7 +48,7 @@ class TunerViewModelTest {
         frame(StandardTuning.strings[0].frequency); runCurrent()
         assertEquals(TuningStatus.IN_TUNE, model.uiState.value.result?.status)
         model.selectString(StandardTuning.strings[1])
-        assertEquals(110.0, model.uiState.value.selectedString.frequency, .00001)
+        assertEquals(110.0, model.uiState.value.selectedString!!.frequency, .00001)
         assertNull(model.uiState.value.result)
         assertTrue(model.uiState.value.microphoneActive)
         frame(StandardTuning.strings[0].frequency); runCurrent()
@@ -61,10 +61,10 @@ class TunerViewModelTest {
         model.start(true); runCurrent()
         StandardTuning.strings.forEach(model::selectString)
         frame(StandardTuning.strings.last().frequency); runCurrent()
-        assertEquals(1, model.uiState.value.selectedString.number)
+        assertEquals(1, model.uiState.value.selectedString!!.number)
         assertEquals(TuningStatus.IN_TUNE, model.uiState.value.result?.status)
         repeat(2) { frame(110.0); runCurrent() }
-        assertEquals(1, model.uiState.value.selectedString.number)
+        assertEquals(1, model.uiState.value.selectedString!!.number)
         assertEquals(TuningStatus.WRONG_NOTE, model.uiState.value.result?.status)
         model.stop(); runCurrent()
     }

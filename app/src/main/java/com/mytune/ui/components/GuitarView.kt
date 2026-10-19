@@ -5,25 +5,35 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.*
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.*
 import com.mytune.domain.model.*
 import com.mytune.ui.theme.*
 import kotlin.math.*
 
 @Composable
-fun GuitarView(selected: GuitarStringNote, onSelect: (GuitarStringNote) -> Unit, modifier: Modifier = Modifier) {
+fun GuitarView(selected: GuitarStringNote?, onSelect: (GuitarStringNote) -> Unit, modifier: Modifier = Modifier,
+    selectionAlpha: Float = 1f) {
+    val currentOnSelect by rememberUpdatedState(onSelect)
+    val emphasis = StandardTuning.strings.map { string ->
+        animateFloatAsState(if (selected == string) selectionAlpha else 0f, tween(140), label = "string_${string.number}").value
+    }
     BoxWithConstraints(modifier.fillMaxWidth()) {
         Canvas(Modifier.fillMaxSize().pointerInput(Unit) {
             detectTapGestures { point ->
                 // String lanes follow the same normalized coordinates as the drawing.
                 if (point.x in size.width * .33f..size.width * .67f) {
                     val index = ((point.x / size.width - .375f) / .05f).roundToInt().coerceIn(0, 5)
-                    onSelect(StandardTuning.strings[index])
+                    currentOnSelect(StandardTuning.strings[index])
                 }
             }
         }) {
@@ -71,10 +81,10 @@ fun GuitarView(selected: GuitarStringNote, onSelect: (GuitarStringNote) -> Unit,
                 val x = .375f + index * .05f
                 val pegY = .16f + (if (index < 3) index else 5 - index) * .205f
                 val pegX = if (index < 3) .38f else .62f
-                val active = selected == string
-                val color = if (active) Orange else Color(0xFFBEB7AA).copy(alpha = .5f)
+                val strength = emphasis[index]
+                val color = lerp(Color(0xFFBEB7AA).copy(alpha = .5f), Orange, strength)
                 val thickness = (2.1f - index * .22f).dp.toPx()
-                if (active) drawLine(Orange.copy(alpha = .10f), p(x, .625f), p(x, 1f), 10.dp.toPx())
+                if (strength > 0f) drawLine(Orange.copy(alpha = .10f * strength), p(x, .625f), p(x, 1f), 10.dp.toPx())
                 drawLine(color, p(pegX, pegY), p(x, .625f), thickness, StrokeCap.Round)
                 drawLine(color, p(x, .625f), p(x, 1f), thickness, StrokeCap.Round)
             }
@@ -83,8 +93,8 @@ fun GuitarView(selected: GuitarStringNote, onSelect: (GuitarStringNote) -> Unit,
             val y = maxHeight * (.16f + row * .205f) - 29.dp
             val left = StandardTuning.strings[row]
             val right = StandardTuning.strings[5 - row]
-            GuitarString(left, selected == left, { onSelect(left) }, Modifier.align(Alignment.TopStart).offset(y = y))
-            GuitarString(right, selected == right, { onSelect(right) }, Modifier.align(Alignment.TopEnd).offset(y = y))
+            GuitarString(left, selected == left, { onSelect(left) }, Modifier.align(Alignment.TopStart).offset(y = y).testTag("guitarString_${left.number}"), selectionAlpha)
+            GuitarString(right, selected == right, { onSelect(right) }, Modifier.align(Alignment.TopEnd).offset(y = y).testTag("guitarString_${right.number}"), selectionAlpha)
         }
         Text("MYTUNE", color = Color(0xFFBFA88B), fontSize = 8.sp, letterSpacing = 2.sp,
             modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp))

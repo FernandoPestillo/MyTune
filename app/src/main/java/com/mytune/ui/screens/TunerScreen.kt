@@ -23,15 +23,16 @@ import com.mytune.ui.theme.*
 
 @Composable
 fun TunerScreen(state: TunerUiState, onSelect: (GuitarStringNote) -> Unit,
-    onMicrophoneAction: () -> Unit, modifier: Modifier = Modifier) {
+    onMicrophoneAction: () -> Unit, modifier: Modifier = Modifier, onModeChange: (TuningMode) -> Unit = {}) {
     Surface(modifier.fillMaxSize(), color = Background) {
         BoxWithConstraints(Modifier.safeDrawingPadding().padding(horizontal = 24.dp)) {
             val landscape = maxWidth > maxHeight
             // Keep the three 58 dp selectors at least 59 dp apart; short screens scroll.
-            val guitarHeight = (maxHeight - 570.dp).coerceIn(290.dp, 350.dp)
+            val guitarHeight = (maxHeight - 630.dp).coerceIn(290.dp, 350.dp)
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).widthIn(max = 920.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)) {
                 Header()
+                TuningModeSelector(state.tuningMode, onModeChange)
                 if (landscape) {
                     Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) { TunerPanel(state) }
@@ -74,19 +75,26 @@ private fun TunerPanel(state: TunerUiState) {
         .padding(horizontal = 22.dp, vertical = 18.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text("AFINADOR", fontSize = 10.sp, letterSpacing = 2.sp, color = Muted)
-            Text("${state.selectedString.number}ª CORDA · ${state.selectedString.label}", fontSize = 10.sp,
-                color = Orange, letterSpacing = 1.sp)
+            Text(state.selectedString?.let { "${it.number}ª CORDA · ${it.label}" } ?: "AGUARDANDO CORDA",
+                fontSize = 10.sp, color = Orange, letterSpacing = 1.sp, maxLines = 1, softWrap = false)
         }
         Column(Modifier.fillMaxWidth().graphicsLayer { alpha = readingAlpha }) {
             NoteDisplay(state)
-            TuningIndicator(state.result, state.readingStatus != ReadingStatus.STALE)
+            TuningIndicator(state.result, state.hasTuningGuidance)
         }
         Spacer(Modifier.height(17.dp))
         val status = when {
             !state.hasPermission -> "Microfone necessário"
             state.error != null -> "Captação interrompida"
             !state.microphoneActive -> "Preparando microfone"
+            state.tuningMode == TuningMode.AUTOMATIC && state.automaticSelectionStatus == AutomaticSelectionStatus.CONFIRMING ->
+                "Identificando a corda"
+            state.tuningMode == TuningMode.AUTOMATIC && state.automaticSelectionStatus == AutomaticSelectionStatus.UNCERTAIN ->
+                if (state.stringClassification?.status == StringClassificationStatus.NO_MATCH) "Sem correspondência · Use o modo Manual"
+                else "Toque uma corda por vez"
             state.readingStatus == ReadingStatus.STALE -> "Última leitura · Sem atualização"
+            state.tuningMode == TuningMode.AUTOMATIC && !state.hasTuningGuidance ->
+                if (state.result == null) "Toque uma corda" else "Última leitura · Aguardando corda"
             state.result?.status == TuningStatus.IN_TUNE -> "Afinada"
             state.result?.status == TuningStatus.WRONG_NOTE ->
                 (if (state.result.cents < 0) "Aperte a corda" else "Afrouxe a corda") + " · Nota diferente da corda selecionada"
@@ -98,11 +106,13 @@ private fun TunerPanel(state: TunerUiState) {
         val messages = listOf("Microfone necessário", "Captação interrompida", "Preparando microfone",
             "Afinada", "Aperte a corda · Nota diferente da corda selecionada",
             "Afrouxe a corda · Nota diferente da corda selecionada", "Aperte a corda", "Afrouxe a corda",
-            "Toque uma corda por vez", "Aguardando áudio", "Última leitura · Sem atualização")
+            "Toque uma corda por vez", "Aguardando áudio", "Última leitura · Sem atualização",
+            "Identificando a corda", "Sem correspondência · Use o modo Manual", "Toque uma corda",
+            "Última leitura · Aguardando corda")
         val staleSuffix = " · Sem atualização"
         StableText(status,
             messages + messages.map { it + staleSuffix },
-            TextStyle(color = if (state.readingStatus == ReadingStatus.STALE) Muted else
+            TextStyle(color = if (!state.hasTuningGuidance) Muted else
                 if (state.result?.status == TuningStatus.IN_TUNE) Green else if (state.result != null) Orange else Muted,
                 fontSize = 13.sp, fontWeight = FontWeight.Medium),
             Modifier.fillMaxWidth().testTag("tuningStatus"))
@@ -117,9 +127,12 @@ private fun GuitarSection(state: TunerUiState, onSelect: (GuitarStringNote) -> U
             Text("A4  440 Hz", color = Muted, fontSize = 10.sp)
         }
         Spacer(Modifier.height(16.dp))
-        GuitarView(state.selectedString, onSelect, Modifier.height(height))
-        Text("Toque para selecionar a corda", Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp),
-            color = Muted, fontSize = 10.sp)
+        GuitarView(state.selectedString, onSelect, Modifier.height(height),
+            selectionAlpha = if (state.tuningMode == TuningMode.AUTOMATIC && !state.hasTuningGuidance) .55f else 1f)
+        StableText(if (state.tuningMode == TuningMode.MANUAL) "Toque para selecionar a corda" else "Toque para voltar ao modo Manual",
+            listOf("Toque para selecionar a corda", "Toque para voltar ao modo Manual"),
+            TextStyle(color = Muted, fontSize = 10.sp),
+            Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp), maxLines = 1, softWrap = false)
     }
 }
 
