@@ -21,11 +21,11 @@ import com.mytune.ui.theme.*
 import java.util.Locale
 
 @Composable
-fun TuningIndicator(result: TuningResult?) {
+fun TuningIndicator(result: TuningResult?, isCurrent: Boolean = true) {
     val cents by animateFloatAsState((result?.cents ?: 0.0).coerceIn(-50.0, 50.0).toFloat(),
         tween(110), label = "cents")
     val pointerAlpha by animateFloatAsState(if (result == null) 0f else 1f, tween(180), label = "pointerAlpha")
-    val color by animateColorAsState(if (result == null) Muted else if (result.status == TuningStatus.IN_TUNE) Green else Orange,
+    val color by animateColorAsState(if (result == null || !isCurrent) Muted else if (result.status == TuningStatus.IN_TUNE) Green else Orange,
         tween(180), label = "tuningColor")
     val description = result?.let { String.format(Locale.forLanguageTag("pt-BR"), "%+.1f cents", it.cents) }
         ?: "Sem detecção válida"
@@ -34,7 +34,7 @@ fun TuningIndicator(result: TuningResult?) {
             val margin = 5.dp.toPx()
             val width = size.width - 2 * margin
             val center = size.width / 2
-            val centerColor = if (result?.status == TuningStatus.IN_TUNE) Green else Muted
+            val centerColor = if (isCurrent && result?.status == TuningStatus.IN_TUNE) Green else Muted
             drawRoundRect(centerColor.copy(alpha = 0.08f), Offset(center - width * 0.05f, 8.dp.toPx()),
                 Size(width * 0.1f, 40.dp.toPx()), CornerRadius(6.dp.toPx()))
             for (tick in -10..10) {

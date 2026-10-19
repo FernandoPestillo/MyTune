@@ -1,0 +1,1 @@
+JVM=17.0.17 OS=Mac OS X arch=aarch64

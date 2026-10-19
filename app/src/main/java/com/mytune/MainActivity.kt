@@ -20,6 +20,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mytune.data.audio.AudioCaptureManager
+import com.mytune.diagnostics.AudioPerformanceMetrics
+import com.mytune.domain.audio.AudioProcessingConfig
 import com.mytune.presentation.TunerViewModel
 import com.mytune.ui.screens.TunerScreen
 import com.mytune.ui.theme.MyTuneTheme
@@ -36,7 +38,13 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             val tuner: TunerViewModel = viewModel(factory = viewModelFactory {
-                initializer { TunerViewModel(AudioCaptureManager(applicationContext)) }
+                initializer {
+                    val metrics = AudioPerformanceMetrics(enabled = BuildConfig.DEBUG,
+                        report = { android.util.Log.d("MyTuneAudio", it) })
+                    val audioConfig = AudioProcessingConfig()
+                    TunerViewModel(AudioCaptureManager(applicationContext, audioConfig, metrics),
+                        metrics = metrics, audioConfig = audioConfig)
+                }
             })
             val state by tuner.uiState.collectAsStateWithLifecycle()
             val lifecycleOwner = LocalLifecycleOwner.current

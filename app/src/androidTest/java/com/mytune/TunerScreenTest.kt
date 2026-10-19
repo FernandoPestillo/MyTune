@@ -100,14 +100,15 @@ class TunerScreenTest {
     }
 
     @Test fun staleReadingIsLabeledAndExpirationRemovesTuningStatus() {
-        val result = TuningCalculator.calculate(80.5, StandardTuning.strings.first(), .99)
+        val result = TuningCalculator.calculate(StandardTuning.strings.first().frequency, StandardTuning.strings.first(), .99)
         var state by mutableStateOf(TunerUiState(hasPermission = true, microphoneActive = true,
             result = result, readingStatus = ReadingStatus.STALE))
         compose.setContent { MyTuneTheme { TunerScreen(state, {}, {}) } }
-        compose.onNodeWithText("Aperte a corda · Sem atualização").assertExists()
+        compose.onNodeWithText("Última leitura · Sem atualização").assertExists()
+        compose.onNodeWithText("Afinada", substring = true).assertDoesNotExist()
         compose.runOnIdle { state = state.copy(result = null, readingStatus = ReadingStatus.ABSENT) }
         compose.onNodeWithText("Aguardando áudio").assertExists()
-        compose.onNodeWithText("Aperte a corda · Sem atualização").assertDoesNotExist()
+        compose.onNodeWithText("Última leitura · Sem atualização").assertDoesNotExist()
         compose.onNodeWithText("CENTS").assertExists()
     }
 

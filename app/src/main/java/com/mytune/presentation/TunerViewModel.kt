@@ -1,9 +1,10 @@
-﻿package com.mytune.presentation
+package com.mytune.presentation
 
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mytune.data.audio.*
+import com.mytune.diagnostics.AudioPerformanceMetrics
 import com.mytune.domain.audio.*
 import com.mytune.domain.model.*
 import kotlinx.coroutines.*
@@ -17,12 +18,14 @@ class TunerViewModel(
     private val detector: PitchDetector = YinPitchDetector(),
     private val stabilityConfig: DetectionStabilityConfig = DetectionStabilityConfig(),
     private val nowMs: () -> Long = { SystemClock.elapsedRealtime() },
+    private val metrics: AudioPerformanceMetrics = AudioPerformanceMetrics(),
+    private val audioConfig: AudioProcessingConfig = AudioProcessingConfig(),
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(TunerUiState())
     val uiState: StateFlow<TunerUiState> = mutableState.asStateFlow()
     private var captureJob: Job? = null
     private val captureMutex = Mutex()
-    // Capture callbacks run on IO; selection and lifecycle events run on Main.
+    // Capture callbacks run on the audio processing worker; selection and lifecycle events run on Main.
     private val stateLock = Any()
     private val stabilizer = DetectionStabilizer(stabilityConfig)
     private var generation = 0L
@@ -45,6 +48,7 @@ class TunerViewModel(
         captureJob = viewModelScope.launch {
             // A rapid pause/resume waits for the previous recorder's finally block.
             captureMutex.withLock {
+                metrics.reset()
                 try {
                     coroutineScope {
                         // One lifecycle-owned clock also expires readings if capture stops emitting.
@@ -65,7 +69,9 @@ class TunerViewModel(
                                 } },
                                 onSamples = { samples, rate ->
                                     val revision = synchronized(stateLock) { selectionRevision }
+                                    val started = metrics.nowNs()
                                     val detection = detector.detect(samples, rate)
+                                    metrics.detection(detection, started, metrics.nowNs(), audioConfig.hopSize * 1_000_000_000L / rate)
                                     synchronized(stateLock) {
                                         val state = mutableState.value
                                         if (state.microphoneActive && generation == session && revision == selectionRevision) {
@@ -104,8 +110,12 @@ class TunerViewModel(
     }
 
     private fun publish(presentation: DetectionPresentation, state: TunerUiState = mutableState.value) {
-        mutableState.value = state.copy(result = presentation.result,
+        val updated = state.copy(result = presentation.result,
             readingStatus = presentation.readingStatus, lastValidDetectionMs = presentation.lastValidDetectionMs)
+        if (updated != mutableState.value) {
+            mutableState.value = updated
+            metrics.uiUpdate()
+        }
     }
 
     private fun TunerUiState.cleared() = copy(result = null, readingStatus = ReadingStatus.ABSENT,

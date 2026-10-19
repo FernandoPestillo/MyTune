@@ -23,7 +23,7 @@ adb shell am start -n com.mytune/.MainActivity
 
 O APK é gerado em `app/build/outputs/apk/debug/app-debug.apk`. O Gradle Wrapper acompanha o projeto. A primeira compilação baixa as dependências; o aplicativo instalado funciona inteiramente offline.
 
-## MVP
+## Versão 1.1 — Precisão e estabilidade
 
 - Tela escura em grafite e laranja, headstock e braço desenhados em Canvas local, seis cordas selecionáveis e indicação acessível da seleção.
 - E Standard: E2, A2, D3, G3, B3, E4. Frequências calculadas por MIDI e temperamento igual, com A4 = 440 Hz, sem arredondamento nos cálculos.
@@ -40,14 +40,17 @@ app/src/main/java/com/mytune/
 ├── MainActivity.kt                    # permissão, ciclo de vida e composição
 ├── data/audio/
 │   ├── AudioCaptureSource.kt          # contrato de buffers emprestados
-│   └── AudioCaptureManager.kt         # AudioRecord e liberação em finally
+│   ├── AudioBufferManager.kt          # buffer circular PCM
+│   └── AudioCaptureManager.kt         # AudioRecord, fila limitada e liberação em finally
 ├── domain/
 │   ├── model/                         # cordas, notas e resultado
 │   └── audio/
+│       ├── AudioProcessingConfig.kt   # configuração YIN, janela e hop
 │       ├── PitchDetector.kt           # frequência, RMS, confiança, qualidade
 │       ├── YinPitchDetector.kt        # YIN independente do Android
 │       ├── PitchSmoother.kt           # mediana + média exponencial
 │       └── TuningCalculator.kt        # MIDI, oitavas, cents, tolerância
+├── diagnostics/AudioPerformanceMetrics.kt # métricas opt-in, sem PCM
 ├── presentation/
 │   ├── TunerUiState.kt                # estado imutável
 │   ├── DetectionPresentation.kt       # retenção, confirmação de mudanças e histerese
@@ -62,13 +65,13 @@ app/src/main/java/com/mytune/
 
 **Captura:** PCM mono de 16 bits, tentativa inicial em 44.100 Hz e fallback em 48.000 Hz. `UNPROCESSED` é usado quando o dispositivo declara suporte; se falhar, há tentativa com `VOICE_RECOGNITION`. As amostras são normalizadas em memória, sem persistência. Leituras não bloqueantes com espera cooperativa de 5 ms permitem cancelar a captura sem depender do desbloqueio de uma leitura nativa. Um mutex impede sobreposição de gravadores em pausas e retomadas rápidas.
 
-**Análise:** janela de 4.096 amostras (~93 ms a 44,1 kHz) e passo de 2.048 (~46 ms). Isso cobre mais de sete períodos de E2 e limita a atualização a ~21,5 Hz (~23,4 Hz a 48 kHz). YIN utiliza diferença temporal, normalização cumulativa, primeiro mínimo abaixo de 0,15 e interpolação parabólica. Faixa: 55–1.100 Hz; RMS mínimo: 0,0025; confiança mínima: 0,90. Os buffers PCM, a janela e a área de trabalho do detector são reutilizados. Captura e análise executam em `Dispatchers.IO`, fora da UI; cada callback termina antes de o buffer ser reutilizado.
+**Análise:** janela de 4.096 amostras (~93 ms a 44,1 kHz) e passo de 2.048 (~46 ms). Isso cobre mais de sete períodos de E2 e limita a atualização a ~21,5 Hz (~23,4 Hz a 48 kHz). YIN utiliza diferença temporal, normalização cumulativa, primeiro mínimo abaixo de 0,15 e interpolação parabólica. Faixa: 55–1.100 Hz; RMS mínimo: 0,0025; confiança mínima: 0,90. Os buffers PCM, a janela e a área de trabalho do detector são reutilizados. Captura executa em `Dispatchers.IO` e análise em um worker `Dispatchers.Default`, fora da UI. Um buffer circular e três janelas reutilizáveis alimentam uma fila de uma janela; sob sobrecarga a mais antiga é descartada. Cada callback termina antes de seu buffer ser reutilizado. A versão 1.1 acrescenta FIR curto (~primeiro zero em 5 kHz), compensação da amplitude entre períodos, verificação de múltiplos de período com evidência do sinal e cálculo antecipadamente encerrado dos lags. `YinConfig` centraliza os parâmetros; o escore de confiança não é uma probabilidade.
 
-**Estabilidade:** `DetectionStabilizer` separa o último buffer recebido da leitura apresentada. Silêncio, baixa confiança e buffers inválidos preservam nota, Hz, cents e orientação por 1.200 ms desde a última leitura aceita. De 1.200 a 1.800 ms, a leitura fica atenuada e recebe “Sem atualização”; aos 1.800 ms, retorna à espera. Um único job vinculado à captura verifica o prazo a cada 50 ms usando `SystemClock.elapsedRealtime()`, mesmo sem novos buffers. Pausa, perda de permissão, erro e término da captura limpam o resultado imediatamente.
+**Estabilidade:** `DetectionStabilizer` separa o último buffer recebido da leitura apresentada. Silêncio, baixa confiança e buffers inválidos preservam nota, Hz, cents e orientação por 1.200 ms desde a última leitura aceita. De 1.200 a 1.800 ms, a leitura fica atenuada, perde o verde e recebe “Última leitura · Sem atualização”; aos 1.800 ms, retorna à espera. Um único job vinculado à captura verifica o prazo a cada 50 ms usando `SystemClock.elapsedRealtime()`, mesmo sem novos buffers. Pausa, perda de permissão, erro e término da captura limpam o resultado imediatamente.
 
-A mediana de três leituras e EMA de fator 0,55 foram preservadas. Mudanças de nota/oitava e saltos maiores que 80 cents exigem duas leituras consecutivas e reiniciam o filtro, evitando interpolar notas diferentes. A histerese entra em “Afinada” em ±5 cents e sai além de ±7 cents; a leitura bruta também precisa respeitar essa faixa e o MIDI do alvo. Trocar de corda limpa retenção, suavização e histerese sem reiniciar o microfone; um buffer em processamento durante a troca é descartado.
+A mediana de três leituras e EMA de fator 0,55 foram preservadas, agora calculadas na escala logarítmica de cents. Mudanças de nota/oitava e saltos maiores que 80 cents exigem duas leituras consecutivas e reiniciam o filtro, evitando interpolar notas diferentes. A histerese entra em “Afinada” em ±5 cents e sai além de ±7 cents; a leitura bruta também precisa respeitar essa faixa e o MIDI do alvo. Trocar de corda limpa retenção, suavização e histerese sem reiniciar o microfone; um buffer em processamento durante a troca é descartado.
 
-Os tempos, tolerâncias, confiança mínima e confirmação de mudanças podem ser ajustados em `DetectionStabilityConfig`, injetável no ViewModel. Janela da mediana, fator EMA e reinicialização interna estão em `PitchSmoother`. O processamento mantém seu passo de ~21–23 Hz; o relógio de expiração não publica estados idênticos no StateFlow.
+Os tempos, tolerâncias, confiança mínima e confirmação de mudanças podem ser ajustados em `DetectionStabilityConfig`, injetável no ViewModel. O fator EMA também é configurável; a janela da mediana permanece em três. A janela de áudio e o hop estão em `AudioProcessingConfig`. O processamento mantém seu passo de ~21–23 Hz; o relógio de expiração não publica estados idênticos no StateFlow.
 
 **Layout:** a orientação reserva o espaço da maior mensagem possível, medido na largura e escala de fonte atuais. Nota/oitava usam uma linha estável; Hz e cents usam números tabulares, precisão fixa e campos com alinhamento constante. Em pouco espaço ou fonte ampliada, nota e frequência ficam empilhadas. As animações alteram apenas cor, opacidade e ponteiro, preservando as dimensões do painel e a posição da guitarra.
 
@@ -90,14 +93,14 @@ Os testes usam Espresso 3.7.0 explicitamente para evitar a reflexão de `InputMa
 
 Os testes unitários exercitam as seis frequências nas duas taxas de amostragem, harmônicos dominantes, buffers sucessivos com continuidade de fase, ruído, silêncio, DC, baixa amplitude, rejeição por confiança, outras notas e oitavas, cálculo de cents, suavização, retenção/expiração com relógio virtual, histerese, rejeição de saltos isolados, seleção durante o processamento, cancelamento, retomada e recuperação de permissão/erro. Os testes instrumentados verificam as seis seleções, a independência entre nota e alvo e as posições dos componentes ao alternar leituras, silêncio e mensagens em retrato, paisagem e tela pequena com fonte ampliada. Um teste adicional abre o `AudioRecord` real, recebe buffers PCM, cancela e reabre a captura.
 
-Os sinais sintéticos e fontes de teste existem apenas em `src/test`; não integram a captura de produção. Consulte [VALIDATION.md](docs/VALIDATION.md) para os resultados efetivamente obtidos e o roteiro físico pendente.
+Os sinais sintéticos e fontes de teste existem apenas em `src/test`; não integram a captura de produção. Consulte [PRECISAO_V1_1.md](docs/PRECISAO_V1_1.md) para diagnóstico, resultados antes/depois, parâmetros, métricas e comandos reproduzíveis. O roteiro físico está em [TESTES_PRECISAO_V1_1.md](docs/TESTES_PRECISAO_V1_1.md). [VALIDATION.md](docs/VALIDATION.md) conserva o histórico da versão anterior. O corpus/benchmark gera CSVs em `app/build/reports/precision/`; os snapshots desta implementação ficam em `docs/measurements/v1_1/`.
 
 ## Limitações
 
-O detector é monofônico: acordes, várias cordas soando, ruído periódico e harmônicos com fundamental ausente ou muito fraca podem produzir leituras incorretas. A confiança do YIN mede periodicidade e não identifica a origem do som. RMS e limiares estão centralizados no construtor do detector e precisam de avaliação acústica em diferentes aparelhos; um sinal fraco pode exigir aproximar a guitarra ou um amplificador do microfone.
+O detector é monofônico: acordes, várias cordas soando, ruído periódico e harmônicos com fundamental ausente ou muito fraca podem produzir leituras incorretas. A confiança do YIN mede periodicidade e não identifica a origem do som. RMS e limiares estão centralizados em `YinConfig` e precisam de avaliação acústica em diferentes aparelhos; um sinal fraco pode exigir aproximar a guitarra ou um amplificador do microfone.
 
 A validação definitiva de precisão, latência, fontes de áudio e comportamento com guitarras elétricas/acústicas exige **dispositivos físicos**. Não foi assumida validação acústica a partir de testes sintéticos ou de emulador. Android pode suspender ou silenciar o microfone por privacidade ou disputa com outro aplicativo; erros detectados são apresentados para nova tentativa. Conectar o instrumento por cabo/USB não possui configuração específica nesta versão.
 
 ## Evolução
 
-Somente o MVP foi implementado. Consulte [ROADMAP.md](docs/ROADMAP.md) para as versões futuras, de ajustes de precisão a ferramentas musicais adicionais.
+A versão 1.1 está implementada e possui validação automatizada; a validação acústica física permanece pendente. Consulte [ROADMAP.md](docs/ROADMAP.md) para as versões futuras, de ajustes de precisão a ferramentas musicais adicionais.

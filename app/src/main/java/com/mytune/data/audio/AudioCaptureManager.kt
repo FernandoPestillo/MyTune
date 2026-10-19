@@ -5,12 +5,25 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.media.*
 import android.os.Build
+import android.media.audiofx.*
+import com.mytune.domain.audio.AudioProcessingConfig
+import com.mytune.diagnostics.AudioPerformanceMetrics
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
 
 /** Owns exactly one recorder per call. Never writes samples to disk. */
-class AudioCaptureManager(context: Context) : AudioCaptureSource {
+class AudioCaptureManager(
+    context: Context,
+    private val config: AudioProcessingConfig = AudioProcessingConfig(),
+    private val metrics: AudioPerformanceMetrics = AudioPerformanceMetrics(),
+) : AudioCaptureSource {
+    private class Window(size: Int) {
+        val samples = FloatArray(size)
+        var availableNs = 0L
+    }
     private val context = context.applicationContext
 
     override suspend fun capture(
@@ -20,33 +33,75 @@ class AudioCaptureManager(context: Context) : AudioCaptureSource {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) !=
             PackageManager.PERMISSION_GRANTED) throw SecurityException("Permissão de microfone necessária")
         val recorder = openRecorder()
+        val effects = mutableListOf<AudioEffect>()
         try {
+            // Sources already avoid voice processing. Also disable controllable session effects;
+            // unavailable/locked vendor effects are diagnostic limitations, never startup failures.
+            fun disable(create: () -> AudioEffect?) {
+                try {
+                    create()?.let { effect ->
+                        effects += effect
+                        if (effect.hasControl()) effect.enabled = false
+                    }
+                } catch (_: RuntimeException) { /* Unsupported by this device/session. */ }
+            }
+            if (AcousticEchoCanceler.isAvailable()) disable { AcousticEchoCanceler.create(recorder.audioSessionId) }
+            if (AutomaticGainControl.isAvailable()) disable { AutomaticGainControl.create(recorder.audioSessionId) }
+            if (NoiseSuppressor.isAvailable()) disable { NoiseSuppressor.create(recorder.audioSessionId) }
             coroutineContext.ensureActive()
             val sampleRate = recorder.sampleRate
+            if (metrics.enabled) metrics.captureConfiguration(recorder.audioSource, sampleRate, recorder.bufferSizeInFrames,
+                config.windowSize, config.hopSize, effects.joinToString(";") { "${it.javaClass.simpleName}:${it.enabled}" })
             onStarted(sampleRate)
-            val pcm = ShortArray(HOP_SIZE)
-            val window = FloatArray(WINDOW_SIZE)
-            var filled = 0
-            var checks = 0
-            while (coroutineContext.isActive) {
-                coroutineContext.ensureActive()
-                // Nonblocking reads make cancellation independent of native read() behavior.
-                val read = recorder.read(pcm, 0, minOf(HOP_SIZE, WINDOW_SIZE - filled), AudioRecord.READ_NON_BLOCKING)
-                if (read < 0) throw AudioCaptureException("O microfone foi interrompido. Tente novamente.")
-                if (read == 0) { delay(5); continue }
-                for (i in 0 until read) window[filled + i] = pcm[i] / 32768f
-                filled += read
-                if (filled == WINDOW_SIZE) {
-                    if (Build.VERSION.SDK_INT >= 29 && checks++ % 20 == 0 &&
-                        recorder.activeRecordingConfiguration?.isClientSilenced == true) {
-                        throw AudioCaptureException("O microfone está indisponível ou bloqueado pelo sistema.")
+            coroutineScope {
+                val pcm = ShortArray(config.hopSize)
+                val ring = AudioBufferManager(config)
+                val free = Channel<Window>(3)
+                repeat(3) { free.trySend(Window(config.windowSize)).getOrThrow() }
+                val pending = Channel<Window>(1, BufferOverflow.DROP_OLDEST, onUndeliveredElement = {
+                    free.trySend(it)
+                    metrics.droppedWindow()
+                })
+                // One CPU worker; capture keeps draining AudioRecord while analysis is running.
+                val worker = launch(Dispatchers.Default) {
+                    for (window in pending) {
+                        val started = metrics.nowNs()
+                        try { onSamples(window.samples, sampleRate) }
+                        finally {
+                            metrics.window(window.availableNs, started, metrics.nowNs())
+                            free.trySend(window)
+                        }
                     }
-                    onSamples(window, sampleRate)
-                    window.copyInto(window, 0, HOP_SIZE, WINDOW_SIZE)
-                    filled = WINDOW_SIZE - HOP_SIZE
+                }
+                var checks = 0
+                try {
+                    while (isActive) {
+                        ensureActive()
+                        val read = recorder.read(pcm, 0, minOf(pcm.size, ring.samplesUntilWindow), AudioRecord.READ_NON_BLOCKING)
+                        if (read < 0) throw AudioCaptureException("O microfone foi interrompido. Tente novamente.")
+                        if (read == 0) { delay(5); continue }
+                        if (ring.append(pcm, read)) {
+                            if (Build.VERSION.SDK_INT >= 29 && checks++ % 20 == 0 &&
+                                recorder.activeRecordingConfiguration?.isClientSilenced == true) {
+                                throw AudioCaptureException("O microfone está indisponível ou bloqueado pelo sistema.")
+                            }
+                            val available = metrics.nowNs()
+                            val window = free.tryReceive().getOrNull()
+                            if (window == null) { metrics.droppedWindow(); continue }
+                            ring.copyWindow(window.samples)
+                            window.availableNs = available
+                            if (!pending.trySend(window).isSuccess) free.trySend(window)
+                        }
+                    }
+                } finally {
+                    pending.cancel()
+                    worker.cancel()
                 }
             }
         } finally {
+            for (effect in effects) {
+                try { effect.release() } catch (_: RuntimeException) { /* Still release the recorder. */ }
+            }
             try { recorder.stop() } catch (_: IllegalStateException) { /* Already stopped. */ }
             recorder.release()
         }
@@ -66,7 +121,7 @@ class AudioCaptureManager(context: Context) : AudioCaptureSource {
                     .setAudioFormat(AudioFormat.Builder().setSampleRate(sampleRate)
                         .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
                         .setEncoding(AudioFormat.ENCODING_PCM_16BIT).build())
-                    .setBufferSizeInBytes(maxOf(minimum * 2, WINDOW_SIZE * 2)).build()
+                    .setBufferSizeInBytes(maxOf(minimum * 2, config.windowSize * 2)).build()
                 if (recorder.state != AudioRecord.STATE_INITIALIZED) continue
                 recorder.startRecording()
                 if (recorder.recordingState == AudioRecord.RECORDSTATE_RECORDING) return recorder
@@ -85,8 +140,4 @@ class AudioCaptureManager(context: Context) : AudioCaptureSource {
         throw AudioCaptureException("Não foi possível iniciar o microfone. Feche outros apps de áudio e tente novamente.")
     }
 
-    companion object {
-        const val WINDOW_SIZE = 4096
-        const val HOP_SIZE = 2048
-    }
 }

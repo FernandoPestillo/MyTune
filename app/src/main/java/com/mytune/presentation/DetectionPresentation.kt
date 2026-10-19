@@ -22,19 +22,20 @@ data class DetectionStabilityConfig(
     val jumpThresholdCents: Double = 80.0,
     val changeConfirmationReadings: Int = 2,
     val minimumConfidence: Double = .90,
+    val smoothingAlpha: Double = .55,
 ) {
     init {
         require(activeReadingDurationMs > 0 && activeReadingDurationMs <= detectionHoldDurationMs)
         require(noSignalTimeoutMs > detectionHoldDurationMs && refreshIntervalMs > 0)
         require(enterInTuneCents > 0 && exitInTuneCents >= enterInTuneCents)
         require(jumpThresholdCents > 0 && changeConfirmationReadings >= 2)
-        require(minimumConfidence in 0.0..1.0)
+        require(minimumConfidence in 0.0..1.0 && smoothingAlpha > 0 && smoothingAlpha <= 1)
     }
 }
 
 /** Single presentation policy. Time is supplied by the owner using a monotonic clock. */
 class DetectionStabilizer(private val config: DetectionStabilityConfig = DetectionStabilityConfig()) {
-    private val smoother = PitchSmoother()
+    private val smoother = PitchSmoother(config.smoothingAlpha)
     private var presentation = DetectionPresentation()
     private var acceptedFrequency: Double? = null
     private var candidateFrequency: Double? = null
@@ -88,7 +89,7 @@ class DetectionStabilizer(private val config: DetectionStabilityConfig = Detecti
         candidateCount = 0
         var result = TuningCalculator.calculate(smoother.smooth(frequency), target, detection.confidence)
         val raw = TuningCalculator.calculate(frequency, target, detection.confidence)
-        val tolerance = if (presentation.result?.status == TuningStatus.IN_TUNE && !changedNote && !jumped)
+        val tolerance = if (presentation.result?.status == TuningStatus.IN_TUNE && presentation.readingStatus != ReadingStatus.STALE && !changedNote && !jumped)
             config.exitInTuneCents else config.enterInTuneCents
         val tuned = raw.note.midi == target.midi && result.note.midi == target.midi &&
             abs(raw.cents) <= tolerance + 1e-9 && abs(result.cents) <= tolerance + 1e-9

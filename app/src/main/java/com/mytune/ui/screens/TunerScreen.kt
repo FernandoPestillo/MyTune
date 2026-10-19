@@ -79,13 +79,14 @@ private fun TunerPanel(state: TunerUiState) {
         }
         Column(Modifier.fillMaxWidth().graphicsLayer { alpha = readingAlpha }) {
             NoteDisplay(state)
-            TuningIndicator(state.result)
+            TuningIndicator(state.result, state.readingStatus != ReadingStatus.STALE)
         }
         Spacer(Modifier.height(17.dp))
         val status = when {
             !state.hasPermission -> "Microfone necessário"
             state.error != null -> "Captação interrompida"
             !state.microphoneActive -> "Preparando microfone"
+            state.readingStatus == ReadingStatus.STALE -> "Última leitura · Sem atualização"
             state.result?.status == TuningStatus.IN_TUNE -> "Afinada"
             state.result?.status == TuningStatus.WRONG_NOTE ->
                 (if (state.result.cents < 0) "Aperte a corda" else "Afrouxe a corda") + " · Nota diferente da corda selecionada"
@@ -97,9 +98,9 @@ private fun TunerPanel(state: TunerUiState) {
         val messages = listOf("Microfone necessário", "Captação interrompida", "Preparando microfone",
             "Afinada", "Aperte a corda · Nota diferente da corda selecionada",
             "Afrouxe a corda · Nota diferente da corda selecionada", "Aperte a corda", "Afrouxe a corda",
-            "Toque uma corda por vez", "Aguardando áudio")
+            "Toque uma corda por vez", "Aguardando áudio", "Última leitura · Sem atualização")
         val staleSuffix = " · Sem atualização"
-        StableText(if (state.readingStatus == ReadingStatus.STALE) status + staleSuffix else status,
+        StableText(status,
             messages + messages.map { it + staleSuffix },
             TextStyle(color = if (state.readingStatus == ReadingStatus.STALE) Muted else
                 if (state.result?.status == TuningStatus.IN_TUNE) Green else if (state.result != null) Orange else Muted,
