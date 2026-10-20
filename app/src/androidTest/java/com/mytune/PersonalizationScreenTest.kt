@@ -100,12 +100,16 @@ class PersonalizationScreenTest {
         compose.onNodeWithTag(tag).performClick()
         compose.waitUntil{!appearance.state.value.saving};compose.waitForIdle()
     }
-    private fun choose(type:HeadstockType){openSettings();setting("headstock_${type.name}");compose.onNodeWithText("Fechar").performClick()}
+    private fun closeSettings(){
+        compose.onNodeWithTag("settingsSheet").performScrollToNode(hasText("Fechar"))
+        compose.onNodeWithText("Fechar").performClick()
+    }
+    private fun choose(type:HeadstockType){openSettings();setting("headstock_${type.name}");closeSettings()}
     private fun emit(hz:Double,count:Int=1){repeat(count){compose.runOnIdle{
         clock.addAndGet(46);source.callback!!(floatArrayOf(hz.toFloat()),44100)
     };compose.waitForIdle()}}
 
-    @Test fun sixStringsSelectInBothModelsAndSwitchPreservesAutomaticPitchAndCapture(){
+    @Test fun sixStringsSelectInAllModelsAndSwitchPreservesAutomaticPitchAndCapture(){
         content()
         for(type in HeadstockType.entries){
             choose(type)
@@ -126,6 +130,22 @@ class PersonalizationScreenTest {
         compose.onNodeWithTag("guitarString_6").assertIsSelected()
         assertEquals(1,source.starts)
     }
+    @Test fun customTuningAndAutomaticSelectionSurviveEveryVisualModel(){
+        content()
+        runBlocking{tuner.saveCustomTuning(null,"Personalizada grave",listOf(35,43,48,53,57,64))}
+        compose.waitUntil{tuner.uiState.value.activeTuning.isCustom}
+        compose.onNodeWithTag("mode_AUTOMATIC").performScrollTo().performClick()
+        emit(com.mytune.domain.tuning.PitchFrequencyCalculator.frequency(35),4)
+        val before=tuner.uiState.value
+        assertEquals(6,before.selectedString!!.number)
+        for(type in HeadstockType.entries){
+            choose(type)
+            assertEquals(before.activeTuning,tuner.uiState.value.activeTuning)
+            assertEquals(before.result,tuner.uiState.value.result)
+            compose.onNodeWithContentDescription("6ª corda, B1").assertIsSelected()
+        }
+        assertEquals(1,source.starts)
+    }
     @Test fun settingsPersistThemeAndTogglesWithoutChangingTuning(){
         content();openSettings();setting("theme_LIGHT")
         compose.runOnIdle{assertTrue(lightPalette)}
@@ -136,7 +156,7 @@ class PersonalizationScreenTest {
         compose.onNodeWithTag("animationSwitch").assertIsOff()
         setting("theme_SYSTEM")
         assertEquals(ThemeMode.SYSTEM,runBlocking{repository.preferences.first()}.theme)
-        compose.onNodeWithText("Fechar").performClick()
+        closeSettings()
         compose.onNodeWithText("Afinação: Drop C").assertExists()
         assertEquals(1,source.starts)
     }
@@ -144,9 +164,10 @@ class PersonalizationScreenTest {
     @Test fun landscapeInlineControlsRemainSelectableInBothThemes() = assertInlineControls(850,400,1f)
     private fun assertInlineControls(width:Int,height:Int,font:Float){
         content(width,height,font)
-        for(theme in listOf(ThemeMode.DARK,ThemeMode.LIGHT)){
-            compose.runOnIdle{appearance.theme(theme);appearance.headstock(HeadstockType.SIX_INLINE)}
-            compose.waitUntil{appearance.state.value.preferences.theme==theme&&appearance.state.value.preferences.headstock==HeadstockType.SIX_INLINE}
+        for(theme in listOf(ThemeMode.DARK,ThemeMode.LIGHT)) for(model in
+            if(width<height) listOf(HeadstockType.SIX_INLINE,HeadstockType.SIX_INLINE_REVERSE) else listOf(HeadstockType.SIX_INLINE)) {
+            compose.runOnIdle{appearance.theme(theme);appearance.headstock(model)}
+            compose.waitUntil{appearance.state.value.preferences.theme==theme&&appearance.state.value.preferences.headstock==model}
             compose.waitForIdle()
             val bounds=mutableListOf<androidx.compose.ui.unit.DpRect>()
             for(number in 6 downTo 1){

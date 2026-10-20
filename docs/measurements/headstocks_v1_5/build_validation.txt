@@ -1,0 +1,13 @@
+MyTune v1.5 — refinamento dos headstocks
+Validação concluída em 2026-10-20T12:43:55.292736-03:00
+JDK: Temurin 17.0.17; Android SDK 36
+testDebugUnitTest: 106/106 aprovados
+lintDebug: 0 erros, 6 avisos preexistentes de dependências
+assembleDebug e assembleDebugAndroidTest: sucesso
+Instrumentação completa: 21/21 aprovados; 163,621 s
+Após ajuste final somente nos gradientes: HeadstockRenderingTest 1/1 aprovado; 6,729 s
+assembleRelease: BUILD SUCCESSFUL in 2m 50s; 52 actionable tasks: 14 executed, 38 up-to-date
+
+app/build/outputs/apk/debug/app-debug.apk: 12350411 bytes; SHA-256 50b182a289a87ebf14065bc2002fc3e57e83a74fc5f384b48714e057c3d888d8
+app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk: 1185802 bytes; SHA-256 13fe5e5cd0e24db9723b46ceb4bec83811bcbdb14edfda40492b6dad401b6f4c
+app/build/outputs/apk/release/app-release-unsigned.apk: 1846859 bytes; SHA-256 ef24eef53768a60db2fe5af081ea7350e4c07b97e6fe7882656b9b6727ee712e

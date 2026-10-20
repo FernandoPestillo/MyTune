@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.*
 import com.mytune.domain.model.GuitarStringNote
 import com.mytune.ui.theme.*
 
+fun guitarStringControlWidth(fontScale: Float, inline: Boolean): Dp = maxOf(if (inline) 82.dp else 66.dp, 50.dp * fontScale + 8.dp)
+
 fun guitarStringControlHeight(fontScale: Float): Dp = maxOf(58.dp, 36.dp * fontScale + 12.dp)
 
 @Composable
@@ -28,7 +30,7 @@ fun GuitarString(string: GuitarStringNote, selected: Boolean, onClick: () -> Uni
     val background by animateColorAsState(if (selected) Orange.copy(alpha = .08f * selectionAlpha) else Panel, tween(duration), label = "stringBackground")
     val border by animateColorAsState(if (selected) Orange.copy(alpha = selectionAlpha) else Muted.copy(alpha = .16f), tween(duration), label = "stringBorder")
     val text by animateColorAsState(if (selected) Orange else Foreground, tween(duration), label = "stringText")
-    Column(modifier.width(maxOf(if (compact) 82.dp else 66.dp, 50.dp * fontScale + 8.dp))
+    Column(modifier.width(guitarStringControlWidth(fontScale, compact))
         .height(guitarStringControlHeight(fontScale))
         .background(background, RoundedCornerShape(14.dp))
         .border(1.dp, border, RoundedCornerShape(14.dp))

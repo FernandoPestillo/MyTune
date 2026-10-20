@@ -44,6 +44,25 @@ class PreferencesRepositoryTest {
             assertEquals(expected.copy(theme=ThemeMode.LIGHT),repo.preferences.first())
         } finally {scope.cancel();scope.coroutineContext.job.join()}
     }
+    @Test fun `legacy model identifiers keep all existing preferences and new reverse restores`() = runTest {
+        for(id in listOf("THREE_PER_SIDE","SIX_INLINE","SIX_INLINE_REVERSE")) {
+            val raw="mytune-appearance-v1\nheadstock=$id\ntheme=LIGHT\nhaptics=false\nstringAnimation=false\n"
+            val preferences=AppPreferencesSerializer.readFrom(ByteArrayInputStream(raw.toByteArray()))
+            assertEquals(HeadstockType.valueOf(id),preferences.headstock)
+            assertEquals(ThemeMode.LIGHT,preferences.theme);assertFalse(preferences.haptics);assertFalse(preferences.stringAnimation)
+            val output=ByteArrayOutputStream();AppPreferencesSerializer.writeTo(preferences,output)
+            assertEquals(raw,output.toString("UTF-8"))
+        }
+        val file=temp.root.resolve("reverse.store")
+        var scope=CoroutineScope(SupervisorJob()+StandardTestDispatcher(testScheduler))
+        var repo=PreferencesRepository(DataStoreFactory.create(AppPreferencesSerializer,scope=scope,produceFile={file}))
+        repo.headstock(HeadstockType.SIX_INLINE_REVERSE);repo.haptics(false)
+        scope.cancel();scope.coroutineContext.job.join()
+        scope=CoroutineScope(SupervisorJob()+StandardTestDispatcher(testScheduler))
+        repo=PreferencesRepository(DataStoreFactory.create(AppPreferencesSerializer,scope=scope,produceFile={file}))
+        try {assertEquals(AppPreferences(headstock=HeadstockType.SIX_INLINE_REVERSE,haptics=false),repo.preferences.first())}
+        finally {scope.cancel();scope.coroutineContext.job.join()}
+    }
     @Test fun `malformed fields fall back individually and valid fields survive`() = runTest {
         val restored=AppPreferencesSerializer.readFrom(ByteArrayInputStream(
             "garbage\nheadstock=UNKNOWN\ntheme=LIGHT\nhaptics=invalid\nstringAnimation=false\n".toByteArray()))

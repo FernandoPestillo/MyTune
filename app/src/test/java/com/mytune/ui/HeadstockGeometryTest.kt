@@ -11,43 +11,85 @@ import org.junit.Assert.*
 import kotlin.math.abs
 
 class HeadstockGeometryTest {
-    @Test fun `both models preserve physical identities and routes stay inside the drawing`() {
-        HeadstockType.entries.forEach { type ->
-            val g = HeadstockGeometry.forType(type)
-            assertEquals((6 downTo 1).toList(), g.routes.map { it.number })
-            g.routes.forEach { route ->
-                listOf(route.peg, route.button, route.nut, route.end).forEach {
-                    assertTrue("$type $it", it.x in 0f..1f && it.y in 0f..1f)
-                }
-                assertEquals(.375f + (6 - route.number) * .05f, route.nut.x, .0001f)
-                assertEquals(route.nut.x, route.end.x, 0f)
-                assertTrue(route.peg.y < g.nutY)
+    @Test fun `three silhouettes map every physical string to its conventional post`() {
+        val three=HeadstockGeometry.forType(HeadstockType.THREE_PER_SIDE)
+        val normal=HeadstockGeometry.forType(HeadstockType.SIX_INLINE)
+        val reverse=HeadstockGeometry.forType(HeadstockType.SIX_INLINE_REVERSE)
+        for(g in listOf(three,normal,reverse)) {
+            assertEquals((6 downTo 1).toList(),g.routes.map {it.number})
+            assertEquals(6,g.routes.map {it.peg}.distinct().size)
+            g.routes.forEach {r->
+                assertTrue(r.peg.y<g.nutY)
+                assertEquals(r.number,g.neckStringAt(r.nut.x,.95f))
+                assertEquals(r.number,g.copy(routes=g.routes.reversed()).neckStringAt(r.nut.x,.95f))
+                assertEquals(r.number,g.pegAt(r.peg.x,r.peg.y,.07f,.04f))
+                assertTrue(contains(g,r.peg))
+                assertTrue(if(r.side==TunerSide.LEFT) r.knob.x<r.peg.x else r.knob.x>r.peg.x)
             }
-            if (type == HeadstockType.THREE_PER_SIDE) {
-                assertEquals(3, g.routes.count { it.button.x == 0f })
-                assertEquals(3, g.routes.count { it.button.x == 1f })
-            } else {
-                assertEquals(1, g.routes.map { it.peg.x }.distinct().size)
-                assertEquals(6, g.routes.count { it.button.x == 0f })
-                assertTrue(g.routes.zipWithNext().all { (a,b) -> a.peg.y > b.peg.y })
+            assertTrue(g.routes.zipWithNext().all {(a,b)->a.thickness>b.thickness})
+            // Intersecting headstock string segments indicate incorrect routing, not a pitch ambiguity.
+            g.routes.forEachIndexed {i,a->g.routes.drop(i+1).forEach {b->assertFalse("${g.type}: ${a.number}/${b.number}",cross(a.peg,a.nut,b.peg,b.nut))}}
+        }
+        assertEquals(listOf(6,5,4),three.routes.filter {it.side==TunerSide.LEFT}.sortedByDescending {it.peg.y}.map {it.number})
+        assertEquals(listOf(3,2,1),three.routes.filter {it.side==TunerSide.RIGHT}.sortedBy {it.peg.y}.map {it.number})
+        assertEquals((6 downTo 1).toList(),normal.routes.sortedByDescending {it.peg.y}.map {it.number})
+        assertTrue(normal.routes.all {it.side==TunerSide.LEFT})
+        assertEquals((1..6).toList(),reverse.routes.sortedByDescending {it.peg.y}.map {it.number})
+        assertTrue(reverse.routes.all {it.side==TunerSide.RIGHT})
+        assertNotEquals(normal.outline,reverse.outline)
+        assertTrue(normal.outline.any {it is OutlineCommand.Cubic})
+        assertTrue(reverse.outline.none {it is OutlineCommand.Cubic || it is OutlineCommand.Quad})
+    }
+    @Test fun `uniform fit keeps hardware inside and accessible controls separated at different sizes`() {
+        for(type in HeadstockType.entries) for(width in listOf(224f,272f,400f,700f)) for(control in listOf(58f,66f)) {
+            val g=HeadstockGeometry.forType(type)
+            val height=g.minimumHeight(control)
+            val buttonWidth=if(type==HeadstockType.THREE_PER_SIDE) 83f else 90f
+            val v=HeadstockViewport.fit(g,width,height,buttonWidth)
+            val centers=v.controlCenters(g,height,control)
+            g.routes.forEach {r->
+                val post=v.map(r.peg);val knob=v.map(r.knob)
+                for(p in listOf(post,knob)) assertTrue("$type $width $p",p.x in 0f..width && p.y in 0f..height)
+                assertEquals(r.peg.x,v.inverse(post).x,.00001f);assertEquals(r.peg.y,v.inverse(post).y,.00001f)
+                assertTrue(centers.getValue(r.number)-control/2>=0)
+                assertTrue(centers.getValue(r.number)+control/2<=height)
+                val x=v.map(RelativePoint(r.peg.x+.01f,r.peg.y))
+                val y=v.map(RelativePoint(r.peg.x,r.peg.y+.01f))
+                assertEquals((x.x-post.x)/g.designWidth,(y.y-post.y)/g.designHeight,.00001f)
             }
+            TunerSide.entries.forEach {side->
+                val rows=g.routes.filter{it.side==side}.map {centers.getValue(it.number)}.sorted()
+                assertTrue(rows.zipWithNext().all {(a,b)->b-a>=control+3.99f})
+            }
+            // Preview and main view use different scales, but exactly the same physical aspect ratio.
+            val preview=HeadstockViewport.fit(g,100f,140f)
+            val a=preview.map(RelativePoint(.35f,g.nutY));val b=preview.map(RelativePoint(.65f,1f))
+            val c=v.map(RelativePoint(.35f,g.nutY));val d=v.map(RelativePoint(.65f,1f))
+            assertEquals((b.x-a.x)/(b.y-a.y),(d.x-c.x)/(d.y-c.y),.00001f)
         }
     }
-    @Test fun `48 pixel peg areas fit and do not overlap at supported component sizes`() {
-        HeadstockType.entries.forEach { type ->
-            for (width in listOf(224f,272f,400f,700f)) for (height in listOf(360f,480f,600f)) {
-                val g = HeadstockGeometry.forType(type)
-                g.routes.forEach { r ->
-                    assertEquals(r.number, g.pegAt(r.peg.x,r.peg.y,24/width,24/height))
-                    assertTrue(r.peg.x * width - 24 >= 0 && r.peg.x * width + 24 <= width)
-                    assertTrue(r.peg.y * height - 24 >= 0 && r.peg.y * height + 24 <= height)
-                }
-                g.routes.forEachIndexed { index, a -> g.routes.drop(index+1).forEach { b ->
-                    assertTrue(abs(a.peg.x-b.peg.x)*width >= 48 || abs(a.peg.y-b.peg.y)*height >= 48)
-                } }
-                assertNull(g.pegAt(0f,1f,24/width,24/height))
+    private fun cross(a:RelativePoint,b:RelativePoint,c:RelativePoint,d:RelativePoint):Boolean {
+        fun turn(p:RelativePoint,q:RelativePoint,r:RelativePoint)=(q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x)
+        return turn(a,b,c)*turn(a,b,d)<0 && turn(c,d,a)*turn(c,d,b)<0
+    }
+    private fun contains(g:HeadstockGeometry,p:RelativePoint):Boolean {
+        val points=mutableListOf<RelativePoint>();var current=RelativePoint(0f,0f)
+        for(c in g.outline) {
+            when(c) {
+                is OutlineCommand.Move->{current=c.p;points+=current}
+                is OutlineCommand.Line->{current=c.p;points+=current}
+                is OutlineCommand.Quad->{val start=current;for(i in 1..30){val t=i/30f;val u=1-t
+                    points+=RelativePoint(u*u*start.x+2*u*t*c.control.x+t*t*c.end.x,u*u*start.y+2*u*t*c.control.y+t*t*c.end.y)};current=c.end}
+                is OutlineCommand.Cubic->{val start=current;for(i in 1..30){val t=i/30f;val u=1-t
+                    points+=RelativePoint(u*u*u*start.x+3*u*u*t*c.first.x+3*u*t*t*c.second.x+t*t*t*c.end.x,
+                        u*u*u*start.y+3*u*u*t*c.first.y+3*u*t*t*c.second.y+t*t*t*c.end.y)};current=c.end}
+                OutlineCommand.Close->Unit
             }
         }
+        var inside=false
+        for(i in points.indices) {val a=points[i];val b=points[(i+1)%points.size]
+            if((a.y>p.y)!=(b.y>p.y) && p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside}
+        return inside
     }
     @Test fun `themes follow explicit or system choice and text colors maintain contrast`() {
         assertTrue(usesDarkTheme(ThemeMode.DARK,false)); assertFalse(usesDarkTheme(ThemeMode.LIGHT,true))

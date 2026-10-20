@@ -25,6 +25,7 @@ import com.mytune.presentation.ReadingStatus
 import com.mytune.presentation.PreferencesUiState
 import com.mytune.presentation.stringVibrationLevel
 import com.mytune.ui.components.*
+import com.mytune.ui.components.headstock.HeadstockGeometry
 import com.mytune.ui.theme.*
 
 @Composable
@@ -50,8 +51,8 @@ fun TunerScreen(state: TunerUiState, onSelect: (GuitarStringNote) -> Unit,
             // Keep the three 58 dp selectors at least 59 dp apart; short screens scroll.
             val fontScale = LocalDensity.current.fontScale
             val selectorHeight = guitarStringControlHeight(fontScale)
-            val minGuitarHeight = if (preferences.headstock == HeadstockType.SIX_INLINE)
-                maxOf(360.dp, selectorHeight / .14f + 8.dp) else maxOf(290.dp, selectorHeight / .205f + 8.dp)
+            val minGuitarHeight = HeadstockGeometry.forType(preferences.headstock)
+                .minimumHeight(selectorHeight.value).dp
             val guitarHeight = (maxHeight - 630.dp).coerceIn(minGuitarHeight, maxOf(350.dp, minGuitarHeight))
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).widthIn(max = 920.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)) {
