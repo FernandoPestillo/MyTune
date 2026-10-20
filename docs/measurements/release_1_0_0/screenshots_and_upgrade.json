@@ -1,0 +1,13 @@
+{
+  "versionName": "1.0.0",
+  "versionCode": 6,
+  "update_without_uninstall": "passed",
+  "appearance_preserved": true,
+  "appearance_sha256": "9a7af786ebd8ce58b716cb5c2b2431d6d68edca69cab01dca8bf9da6a66656df",
+  "activity": "com.mytune/.MainActivity",
+  "android": "Android 16 / API 36.1 arm64",
+  "portrait": "1080x1920 @ 260 dpi",
+  "landscape": "1920x1080 @ 260 dpi",
+  "state": "Manual; E Standard; sexta corda E2 selecionada; aguardando \u00e1udio; 3 + 3",
+  "tests_display": "1080x1920 @ 280 dpi"
+}

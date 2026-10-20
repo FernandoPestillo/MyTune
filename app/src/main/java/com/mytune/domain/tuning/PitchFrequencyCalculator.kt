@@ -2,7 +2,7 @@ package com.mytune.domain.tuning
 
 import kotlin.math.*
 
-/** Single fixed reference for v1.3. No user calibration or chromatic mode is exposed. */
+/** Single fixed reference for the initial release. No user calibration or chromatic mode is exposed. */
 object PitchFrequencyCalculator {
     const val A4_HZ = 440.0
     private val sharp = listOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")

@@ -1,4 +1,6 @@
-# Precisão e estabilidade — versão 1.1
+# Precisão e estabilidade — MyTune 1.0.0
+
+> Registro de uma etapa interna da construção da Release inicial **1.0.0**. As medições e decisões abaixo descrevem o estado daquela etapa; os resultados consolidados do lançamento estão em [RELEASE_1_0_0.md](RELEASE_1_0_0.md).
 
 ## Diagnóstico anterior às alterações
 
@@ -13,7 +15,7 @@
 
 ## Referência reproduzível
 
-Antes de alterar produção, executar a suíte original e o corpus ampliado (`PrecisionReferenceTest`). Guardar CSVs em `docs/measurements/v1_1/before/`. O corpus cobre duas taxas, janelas 4096/8192, seis cordas, nove desvios, harmônicos dominantes, ruído, notas suaves e decaimento. O benchmark é da JVM do computador, não do Android nem da latência acústica total.
+Antes de alterar produção, executar a suíte original e o corpus ampliado (`PrecisionReferenceTest`). Guardar CSVs em `docs/measurements/precisao/before/`. O corpus cobre duas taxas, janelas 4096/8192, seis cordas, nove desvios, harmônicos dominantes, ruído, notas suaves e decaimento. O benchmark é da JVM do computador, não do Android nem da latência acústica total.
 
 ## Alterações e decisões
 
@@ -27,7 +29,7 @@ Antes de alterar produção, executar a suíte original e o corpus ampliado (`Pr
 - Mantidos UNPROCESSED condicionado à propriedade de suporte e fallback VOICE_RECOGNITION, incluindo tentativa de ambas as taxas. AEC/AGC/NS da sessão são desativados quando controláveis e liberados no finally. Efeito indisponível não impede captura; processamento de fabricante sem controle permanece uma limitação.
 - `PitchSmoother` conserva mediana de três + EMA 0,55, agora em cents/log2. Confirmação de duas leituras para mudanças e histerese 5/7 conservadas. Não se calcula média entre oitavas. Leitura STALE deixa de fornecer histerese de saída para uma nova aquisição.
 - Retenção 1200/1800 ms preservada; STALE conserva frequência, mas perde verde e texto “Afinada”. Layout, seletores e ponteiro mantidos; mensagens continuam com espaço reservado. `TunerViewModel` não republica estados idênticos e compartilha métricas/configuração com a captura.
-- Versão Android: 1.1.0, versionCode 2. Nenhuma funcionalidade do roadmap 1.2+ implementada.
+- Etapa interna de precisão, posteriormente integrada ao lançamento inicial 1.0.0. Os demais recursos foram implementados nas etapas seguintes.
 
 ## Resultados de precisão (19/10/2026)
 
@@ -133,15 +135,15 @@ Usar JDK 17 e SDK 36 configurado no projeto:
 ./gradlew testDebugUnitTest --tests '*PrecisionReferenceTest' --rerun-tasks
 ```
 
-O teste grava `app/build/reports/precision/{corpus.csv,benchmark.csv,failures.txt,environment.txt}`. `YinRobustnessTest` acrescenta `filter_comparison.csv`. Os arquivos rastreados em `docs/measurements/v1_1/{before,after}/` são snapshots desta execução; não são sobrescritos automaticamente. A primeira suíte original passou (42 testes); com o corpus ampliado antes das mudanças, 43/44 testes passaram e o corpus apontou 56 casos fora do critério. Nenhum teste foi removido para ocultar falha.
+O teste grava `app/build/reports/precision/{corpus.csv,benchmark.csv,failures.txt,environment.txt}`. `YinRobustnessTest` acrescenta `filter_comparison.csv`. Os arquivos rastreados em `docs/measurements/precisao/{before,after}/` são snapshots desta execução; não são sobrescritos automaticamente. A primeira suíte original passou (42 testes); com o corpus ampliado antes das mudanças, 43/44 testes passaram e o corpus apontou 56 casos fora do critério. Nenhum teste foi removido para ocultar falha.
 
 ## Próximos passos e limites
 
-Executar [TESTES_PRECISAO_V1_1.md](TESTES_PRECISAO_V1_1.md) em celulares físicos, guitarra elétrica e acústica; registrar os resultados e a referência utilizada antes de concluir a validação acústica. Medir p95 de processamento, CPU/GC, fontes/efeitos e latência externa por aparelho; revisar piso RMS, FIR e heurísticas somente com esses dados.
+Executar [TESTES_PRECISAO.md](TESTES_PRECISAO.md) em celulares físicos, guitarra elétrica e acústica; registrar os resultados e a referência utilizada antes de concluir a validação acústica. Medir p95 de processamento, CPU/GC, fontes/efeitos e latência externa por aparelho; revisar piso RMS, FIR e heurísticas somente com esses dados.
 
 Persistem ambiguidades físicas: só harmônicos pares não identificam uma fundamental inaudível; múltiplas cordas/ruído tonal podem ser periódicos; fundamentais muito fracas com ruído podem falhar. Não há garantia universal da meta de 2 cents. A escolha de UNPROCESSED depende do dispositivo e desabilitar efeitos da sessão não remove todo processamento do fabricante.
 
-Para preparar 1.2, conservar a separação entre frequência detectada e alvo selecionado e usar este corpus como proteção de regressões. Seleção automática e novas afinações continuam fora do escopo; não há configuração A4 ou modo cromático independente introduzidos.
+Para preparar a etapa seguinte de seleção automática, conservar a separação entre frequência detectada e alvo selecionado e usar este corpus como proteção de regressões. Seleção automática e novas afinações continuam fora do escopo; não há configuração A4 ou modo cromático independente introduzidos.
 
 Referências técnicas primárias: [artigo YIN (de Cheveigné/Kawahara)](https://iro.umontreal.ca/~pift6080/H09/documents/papers/yin_pitch_tracker.pdf), [AudioRecord e leituras não bloqueantes](https://developer.android.com/reference/android/media/AudioRecord), [fontes UNPROCESSED e VOICE_RECOGNITION](https://developer.android.com/media/platform/mediarecorder), [efeitos de supressão por sessão](https://developer.android.com/reference/android/media/audiofx/NoiseSuppressor).
 
@@ -150,7 +152,7 @@ Referências técnicas primárias: [artigo YIN (de Cheveigné/Kawahara)](https:/
 - **52/52 testes locais aprovados**, zero falhas: YIN, corpus, ablação, robustez, cálculos musicais, estabilização, integração detector→apresentação, ring com leituras parciais, métricas e ViewModel/ciclo de vida.
 - **8/8 testes instrumentados aprovados**, zero falhas, em `Medium_Phone_API_36.1`, Android 16/API 36.1 arm64. Incluem AudioRecord entregando PCM/cancelando/reabrindo, seis seleções manuais, independência do alvo, retenção e expiração, layout estável em retrato/paisagem/tela pequena com fonte ampliada. Não medem precisão acústica nem desempenho de celular físico.
 - `assembleDebug`, `assembleDebugAndroidTest`, `assembleRelease` e `lintDebug` concluídos. Release gera APK **não assinado**; não foi publicado. Lint sem erros; seis avisos de versões de dependências (GradleDependency/NewerVersionAvailable), sem alterar as dependências do projeto.
-- O primeiro emulador travou serviços de pacotes. Reinício com `-no-snapshot -gpu host -feature -Vulkan` restaurou serviços. O launcher `connectedDebugAndroidTest` foi interrompido após problemas do harness; a suíte final foi executada diretamente pelo AndroidJUnitRunner, com APKs debug e androidTest atualizados. Resultado bruto em `docs/measurements/v1_1/after/instrumentation.txt` (`OK (8 tests)`, 53,773 s).
+- O primeiro emulador travou serviços de pacotes. Reinício com `-no-snapshot -gpu host -feature -Vulkan` restaurou serviços. O launcher `connectedDebugAndroidTest` foi interrompido após problemas do harness; a suíte final foi executada diretamente pelo AndroidJUnitRunner, com APKs debug e androidTest atualizados. Resultado bruto em `docs/measurements/precisao/after/instrumentation.txt` (`OK (8 tests)`, 53,773 s).
 - **Pendentes:** todos os cenários com guitarras/celulares físicos, latência acústica total, CPU/bateria/GC Android e efeitos/fontes em fabricantes reais. Nenhum resultado físico foi simulado.
 
 Comandos usados para a execução instrumentada final:

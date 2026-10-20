@@ -23,7 +23,7 @@ class AlternatePitchDetectionTest {
                     rows += "$rate,$size,$midi,$detuning,$profile,$allowed,${result.frequency ?: ""},${cents ?: ""},${result.confidence}"
                 }
             }
-        File("build/reports/tunings/v1_3_pitch.csv").apply { parentFile!!.mkdirs(); writeText(rows.joinToString("\n")+"\n") }
+        File("build/reports/tunings/pitch.csv").apply { parentFile!!.mkdirs(); writeText(rows.joinToString("\n")+"\n") }
         assertTrue(failures.joinToString("\n"), failures.isEmpty())
     }
     @Test fun `each preset classifies each open string and exact unisons remain ambiguous regardless of order`() {
@@ -56,7 +56,7 @@ class AlternatePitchDetectionTest {
                 assertTrue("$midi scenario=$scenario cents=$error",abs(error) <= if (scenario==2) 5 else 2)
                 rows += "$rate,$size,$midi,$scenario,$phase,${result.frequency},$error,${result.confidence}"
             }
-        File("build/reports/tunings/v1_3_low.csv").apply { parentFile!!.mkdirs(); writeText(rows.joinToString("\n")+"\n") }
+        File("build/reports/tunings/low.csv").apply { parentFile!!.mkdirs(); writeText(rows.joinToString("\n")+"\n") }
     }
     @Test fun `host window comparison records processing cost without claiming Android latency`() {
         val lines = mutableListOf("rate,window,note,median_processing_ms,p95_processing_ms,window_ms,hop_ms")
@@ -69,7 +69,7 @@ class AlternatePitchDetectionTest {
             }.sorted()
             lines += "$rate,$size,C2,${times[25]},${times[47]},${size*1000.0/rate},${2048*1000.0/rate}"
         }
-        File("build/reports/tunings/v1_3_windows.csv").apply { parentFile!!.mkdirs(); writeText(lines.joinToString("\n")+"\n") }
+        File("build/reports/tunings/windows.csv").apply { parentFile!!.mkdirs(); writeText(lines.joinToString("\n")+"\n") }
     }
 
 }

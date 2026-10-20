@@ -1,14 +1,25 @@
 # Roadmap
 
-As versões 1.1, 1.2, 1.3 e 1.5 possuem implementação e validação automatizada; a avaliação acústica física permanece pendente. As versões seguintes são planejamento.
+## Release inicial — 1.0.0
 
-| Versão | Objetivo | Implementações previstas |
-|---|---|---|
-| 1.1 | Precisão | Implementada: YIN, rejeição de ruído/harmônicos, estabilidade em cents, buffer circular e métricas debug. [Resultados e validação física pendente](PRECISAO_V1_1.md). |
-| 1.2 | Seleção automática | Implementada: classificação em cents, confirmação temporal, modos Manual/Automático e destaque na guitarra. [Resultados e validação física pendente](AFINACAO_AUTOMATICA_V1_2.md). |
-| 1.3 | Afinações alternativas | Implementada: nove presets, personalizadas B1–E5, biblioteca/editor, DataStore e referências dinâmicas em ambos os modos. [Resultados e validação física pendente](AFINACOES_V1_3.md). |
-| 1.4 | Modo cromático | Adiada: identificação independente de corda e calibração configurável de A4; não implementadas na v1.5. |
-| 1.5 | Personalização | Implementada: headstocks 3 + 3, 6 em linha e invertido, vibração visual, feedback tátil, temas, preferências locais e acessibilidade. [Relatório inicial](EXPERIENCIA_VISUAL_V1_5.md), [refinamento geométrico](HEADSTOCKS_REFINAMENTO_V1_5.md) e [correção pela referência visual](HEADSTOCKS_CORRECAO_VISUAL_V1_5.md); validação física pendente. |
-| 2.0 | Ferramentas musicais | Metrônomo, acordes/diagramas, tons de referência, perfis, guitarras de 7/8 cordas, baixo e configurações avançadas. |
+Todo o trabalho implementado até o primeiro lançamento pertence à **1.0.0**. Os números dos antigos planos identificavam etapas de desenvolvimento, sem lançamentos públicos independentes.
 
-A captura usa o contrato `AudioCaptureSource`; algoritmos podem substituir `PitchDetector` sem alterar a tela. As frequências são propriedades de notas MIDI. A UI recebe resultados e alvos independentes, permitindo novos modos posteriormente sem acoplar Canvas à análise.
+| Área | Incluído na 1.0.0 |
+|---|---|
+| Precisão | YIN, rejeição de ruído/harmônicos, estabilidade em cents, buffer circular e métricas debug. [Relatório](PRECISAO.md). |
+| Seleção automática | Classificação em cents, confirmação temporal, modos Manual/Automático e destaque da corda. [Relatório](AFINACAO_AUTOMATICA.md). |
+| Afinações | Nove presets, personalizadas B1–E5, biblioteca/editor, DataStore e referências dinâmicas nos dois modos. [Relatório](AFINACOES.md). |
+| Personalização | Três headstocks, vibração visual, feedback tátil, temas, preferências locais e acessibilidade. [Relatório](EXPERIENCIA_VISUAL.md). |
+| Acabamento dos instrumentos | Geometrias e materiais refinados com a referência visual. [Refinamento](HEADSTOCKS_REFINAMENTO.md) e [correção visual](HEADSTOCKS_CORRECAO_VISUAL.md). |
+
+A implementação possui testes automatizados; a avaliação acústica em aparelhos físicos permanece pendente. Veja [RELEASE_1_0_0.md](RELEASE_1_0_0.md) para o lançamento e sua validação.
+
+## Possibilidades futuras
+
+Sem numeração de release definida:
+
+- Modo cromático independente e calibração configurável de A4.
+- Metrônomo, acordes/diagramas, tons de referência e perfis.
+- Guitarras de 7/8 cordas, baixo e configurações avançadas.
+
+A captura usa o contrato `AudioCaptureSource`; algoritmos podem substituir `PitchDetector` sem alterar a tela. As frequências são propriedades de notas MIDI, e a UI recebe resultados e alvos independentes.

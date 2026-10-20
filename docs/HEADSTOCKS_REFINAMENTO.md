@@ -1,8 +1,10 @@
-# MyTune v1.5 — Refinamento dos headstocks
+# MyTune 1.0.0 — Refinamento dos headstocks
+
+> Registro de uma etapa interna da construção da Release inicial **1.0.0**. As medições e decisões abaixo descrevem o estado daquela etapa; os resultados consolidados do lançamento estão em [RELEASE_1_0_0.md](RELEASE_1_0_0.md).
 
 ## Escopo e referências
 
-A base foi a v1.5 existente no commit `3a20ca8`, com dois modelos em Canvas e DataStore tipado para preferências. O repositório estava limpo. Foram inspecionados enum, geometria, desenho, seleção, animação, configurações, persistência e testes antes das alterações.
+A base foi a etapa de personalização existente no commit `3a20ca8`, com dois modelos em Canvas e DataStore tipado para preferências. O repositório estava limpo. Foram inspecionados enum, geometria, desenho, seleção, animação, configurações, persistência e testes antes das alterações.
 
 O anexo recebido contém somente texto. As três fotografias mencionadas não estavam anexadas nem no repositório. As silhuetas são desenhos próprios construídos a partir das características descritas; não se afirma comparação visual com essas fotografias. Nenhuma fotografia, marca, logotipo ou inscrição de fabricante foi incorporada. A inscrição que ficava sobre o desenho foi retirada para manter a ilustração limpa e não prender o texto ao antigo posicionamento.
 
@@ -32,7 +34,7 @@ Os controles semânticos mantêm áreas mínimas de 48 dp, fonte ampliada e iden
 
 Os nomes persistidos `THREE_PER_SIDE` e `SIX_INLINE` permanecem iguais. Foi acrescentado `SIX_INLINE_REVERSE`; mudar os títulos visuais não migra nem sobrescreve os valores anteriores. Arquivo, serializer, repositório e ViewModel de preferências foram mantidos. Tema, háptico, animação e biblioteca de afinações continuam independentes.
 
-Não houve alteração no AudioRecord, YIN, filtros, classificador, referências musicais, estado/ViewModel de afinação ou política tátil. Não foi adicionado modo cromático, calibração ou dependência. O versionamento permanece 1.5.0, por se tratar do refinamento solicitado dentro da v1.5.
+Não houve alteração no AudioRecord, YIN, filtros, classificador, referências musicais, estado/ViewModel de afinação ou política tátil. Não foi adicionado modo cromático, calibração ou dependência. O refinamento integra a Release inicial 1.0.0.
 
 ## Arquivos
 
@@ -73,7 +75,7 @@ Verificações realizadas em 20/10/2026:
 - MainActivity real restaurou **6 em linha invertido** e **Drop C** após encerrar e reabrir o processo. Tema, háptico e animação permaneceram preservados.
 - SHA-256 confirma **23 arquivos de áudio, dados/persistência e apresentação musical sem alteração**.
 
-Registros em `measurements/headstocks_v1_5/`. Capturas da Activity real: [3 + 3](measurements/headstocks_v1_5/three_per_side.png), [6 em linha](measurements/headstocks_v1_5/six_inline.png), [invertido](measurements/headstocks_v1_5/six_inline_reverse.png) e [configurações](measurements/headstocks_v1_5/settings_three_models.png). As [silhuetas monocromáticas](measurements/headstocks_v1_5/silhouettes.svg) são exportadas das definições vetoriais e permitem comparar o contorno sem materiais/ferragens. As imagens do app mostram silêncio no modo automático, com Drop C ativo; não simulam uma medição acústica.
+Registros em `measurements/headstocks_refinamento/`. Capturas da Activity real: [3 + 3](measurements/headstocks_refinamento/three_per_side.png), [6 em linha](measurements/headstocks_refinamento/six_inline.png), [invertido](measurements/headstocks_refinamento/six_inline_reverse.png) e [configurações](measurements/headstocks_refinamento/settings_three_models.png). As [silhuetas monocromáticas](measurements/headstocks_refinamento/silhouettes.svg) são exportadas das definições vetoriais e permitem comparar o contorno sem materiais/ferragens. As imagens do app mostram silêncio no modo automático, com Drop C ativo; não simulam uma medição acústica.
 
 O AVD temporário utiliza quatro núcleos, 4096 MB, 720×1600, densidade 280 e SwiftShader. A instância original e os seus dados são preservados.
 
@@ -81,4 +83,4 @@ APK debug: `app/build/outputs/apk/debug/app-debug.apk`; release sem assinatura: 
 
 ## Limitações
 
-Não houve comparação com as três fotografias ausentes. A validação visual final contra essas referências depende de recebê-las. Testes de interface/emulador não substituem avaliação em aparelhos físicos, TalkBack manual, sensação háptica, desempenho/bateria ou precisão acústica. As limitações musicais da v1.3/v1.5 permanecem.
+Não houve comparação com as três fotografias ausentes. A validação visual final contra essas referências depende de recebê-las. Testes de interface/emulador não substituem avaliação em aparelhos físicos, TalkBack manual, sensação háptica, desempenho/bateria ou precisão acústica. As limitações musicais da etapa de afinações/etapa de personalização permanecem.

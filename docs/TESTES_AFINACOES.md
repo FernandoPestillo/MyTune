@@ -1,10 +1,12 @@
-# Plano físico — afinações 1.3
+# Plano físico — afinações — MyTune 1.0.0
+
+> Registro de uma etapa interna da construção da Release inicial **1.0.0**. As medições e decisões abaixo descrevem o estado daquela etapa; os resultados consolidados do lançamento estão em [RELEASE_1_0_0.md](RELEASE_1_0_0.md).
 
 **Situação em 19/10/2026: pendente.** Não havia guitarra ou celular Android físico disponível. O emulador e os sinais sintéticos não comprovam precisão acústica, latência ou consumo de CPU em aparelhos reais.
 
 ## Preparação
 
-Registrar build/commit, modelo/Android, instrumento elétrico/acústico, microfone/fonte/taxa, ambiente/ruído e distância. Usar uma corda isolada, com as demais abafadas. Comparar com afinador confiável em A4=440 Hz; para erro objetivo em cents, usar frequência numérica de referência e sua incerteza. Medir som→tela separadamente de janela→resultado e confirmação automática, conforme os planos 1.1/1.2.
+Registrar build/commit, modelo/Android, instrumento elétrico/acústico, microfone/fonte/taxa, ambiente/ruído e distância. Usar uma corda isolada, com as demais abafadas. Comparar com afinador confiável em A4=440 Hz; para erro objetivo em cents, usar frequência numérica de referência e sua incerteza. Medir som→tela separadamente de janela→resultado e confirmação automática, conforme os planos de precisão/seleção automática.
 
 Os presets estão na biblioteca do app, da sexta para a primeira corda. Para mudanças grandes (por exemplo, E Standard→Drop C), usar Manual enquanto a frequência ainda estiver fora das bandas automáticas; não aceitar uma associação apenas porque o alvo desejado é C2.
 
@@ -54,9 +56,9 @@ Referência/incerteza: ___ · Distância/intensidade/ruído: ___ · Fonte/taxa: 
 
 - Presets/rótulos/identidades corretos; alvo atual em ambos os modos e nenhum verde ou cents da afinação anterior após troca/edição/exclusão.
 - Afinações personalizadas e seleção restauradas após reinício; um registro inválido não pode apagar os válidos. Erros de escrita devem ser apresentados, sem parar o microfone. Não corromper arquivos de um usuário real para testar recuperação; usar instalação/dados de teste.
-- Manter as metas físicas dos planos 1.1/1.2 nas condições definidas: precisão objetiva avaliada com referência, identificação ≥95% nas tentativas isoladas e confirmação preferencialmente ≤250 ms desde detecção confiável. Não declarar essas metas apenas com resultados sintéticos.
+- Manter as metas físicas dos planos de precisão/seleção automática nas condições definidas: precisão objetiva avaliada com referência, identificação ≥95% nas tentativas isoladas e confirmação preferencialmente ≤250 ms desde detecção confiável. Não declarar essas metas apenas com resultados sintéticos.
 - Uníssono e bandas sobrepostas não podem ser desempatados arbitrariamente. Notas fora da faixa de associação precisam de ausência de correspondência; Manual permanece disponível.
 - Processamento p95 abaixo do hop em uso estável e ausência de descarte contínuo/crescimento de memória/gravadores. Avaliar hardware e aquecimento; benchmark JVM não substitui profiler Android.
 - Retenção breve, STALE aos 1200 ms e ausência aos 1800 ms preservadas. Mudança de afinação não reinicia AudioRecord.
 
-Após execução, anexar medições, falhas e limitações ao relatório [AFINACOES_V1_3.md](AFINACOES_V1_3.md). Uníssono é fisicamente indistinguível por frequência; ruído tonal e múltiplas cordas podem ainda produzir uma periodicidade válida. Não declarar reconhecimento polifônico nem conformidade acústica sem evidência.
+Após execução, anexar medições, falhas e limitações ao relatório [AFINACOES.md](AFINACOES.md). Uníssono é fisicamente indistinguível por frequência; ruído tonal e múltiplas cordas podem ainda produzir uma periodicidade válida. Não declarar reconhecimento polifônico nem conformidade acústica sem evidência.

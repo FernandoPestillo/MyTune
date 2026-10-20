@@ -1,14 +1,16 @@
-# MyTune v1.5 — Correção pela referência visual
+# MyTune 1.0.0 — Correção pela referência visual
+
+> Registro de uma etapa interna da construção da Release inicial **1.0.0**. As medições e decisões abaixo descrevem o estado daquela etapa; os resultados consolidados do lançamento estão em [RELEASE_1_0_0.md](RELEASE_1_0_0.md).
 
 ## Referência e escopo
 
-Esta correção parte do commit `e8b9e16` e utiliza a imagem recebida **Três Estilos de Headstock de Guitarra.png** como referência principal. Ela complementa o [relatório anterior](HEADSTOCKS_REFINAMENTO_V1_5.md), escrito quando as fotografias não estavam disponíveis.
+Esta correção parte do commit `e8b9e16` e utiliza a imagem recebida **Três Estilos de Headstock de Guitarra.png** como referência principal. Ela complementa o [relatório anterior](HEADSTOCKS_REFINAMENTO.md), escrito quando as fotografias não estavam disponíveis.
 
 Os mesmos três tipos, títulos, IDs persistidos e controles foram preservados. A imagem orienta proporções, materiais, lados das ferragens e transições até o braço; os caminhos vetoriais são próprios. O desenho central, a tampa ornamental e as inscrições da referência não foram incorporados. A imagem não integra os assets nem o APK.
 
 ## Comparação visual
 
-A [comparação lado a lado](measurements/headstocks_correcao_v1_5/comparison.png) é uma captura do Canvas de produção, e não uma simulação externa. A mesma composição está disponível no Android Studio em `HeadstocksSideBySidePreview`, além dos três previews individuais existentes. O fundo branco facilita a comparação com a imagem fornecida. A imagem recebida e essa renderização foram inspecionadas visualmente antes de encerrar a implementação, comparando a coroa, os ombros, a curva lateral, os metais e o alinhamento do nut/escala em cada modelo.
+A [comparação lado a lado](measurements/headstocks_correcao_visual/comparison.png) é uma captura do Canvas de produção, e não uma simulação externa. A mesma composição está disponível no Android Studio em `HeadstocksSideBySidePreview`, além dos três previews individuais existentes. O fundo branco facilita a comparação com a imagem fornecida. A imagem recebida e essa renderização foram inspecionadas visualmente antes de encerrar a implementação, comparando a coroa, os ombros, a curva lateral, os metais e o alinhamento do nut/escala em cada modelo.
 
 | Modelo | Correção de silhueta | Material e ferragens |
 |---|---|---|
@@ -24,7 +26,7 @@ As rotas mantêm o número físico da corda, independentemente da afinação. No
 
 Os trajetos são diretos entre nut e poste, sem copiar as inconsistências de conexão da imagem gerada. A espessura segue o número físico. No modelo claro, as cordas são escuras sobre a madeira e claras sobre a escala; isso melhora o contraste no trecho inferior. O destaque continua associado à corda lógica e a vibração atua somente após o nut.
 
-A transformação uniforme existente continua compartilhada entre desenho, controles e conversão inversa do toque. As áreas acessíveis de seleção, a troca imediata, a transição, os modos e as afinações personalizadas permanecem existentes. Não houve alteração de tipos persistidos, serializers, repositórios, ViewModels, processamento de áudio, YIN, preferências ou dependências. Versão mantida em 1.5.0.
+A transformação uniforme existente continua compartilhada entre desenho, controles e conversão inversa do toque. As áreas acessíveis de seleção, a troca imediata, a transição, os modos e as afinações personalizadas permanecem existentes. Não houve alteração de tipos persistidos, serializers, repositórios, ViewModels, processamento de áudio, YIN, preferências ou dependências. Este trabalho integra a Release inicial 1.0.0.
 
 Os caminhos de contorno, reflexão, veios e botões, os gradientes e as ferragens ficam em `remember` por geometria. Leituras de frequência e quadros de animação reutilizam esses objetos. Apenas o caminho livre da corda ativa é atualizado quando há vibração; sem deslocamento, o trecho é desenhado como linha.
 
@@ -49,11 +51,11 @@ Verificações realizadas em 20/10/2026:
 - A auditoria SHA-256 confirma **30 arquivos de dados, domínio e apresentação sem alterações**, incluindo YIN, áudio, bibliotecas de afinações, preferências e ViewModels.
 - A MainActivity real foi conferida em 720×1600 a 280 dpi: seis controles completos de pelo menos 48 dp nos três modelos, E Standard preservada e modelo invertido restaurado após encerrar/reabrir o processo.
 
-Os registros ficam em [measurements/headstocks_correcao_v1_5](measurements/headstocks_correcao_v1_5/): resultados unitários, instrumentação, build, lint, comparação visual e auditoria dos arquivos protegidos. A instância de validação é um AVD Android 16/API 36.1 arm64 temporário, com 4 núcleos, 4096 MB e SwiftShader. O AVD original e seus dados permanecem intactos.
+Os registros ficam em [measurements/headstocks_correcao_visual](measurements/headstocks_correcao_visual/): resultados unitários, instrumentação, build, lint, comparação visual e auditoria dos arquivos protegidos. A instância de validação é um AVD Android 16/API 36.1 arm64 temporário, com 4 núcleos, 4096 MB e SwiftShader. O AVD original e seus dados permanecem intactos.
 
-Capturas da Activity: [3 + 3](measurements/headstocks_correcao_v1_5/three_per_side.png), [6 em linha](measurements/headstocks_correcao_v1_5/six_inline.png), [invertido](measurements/headstocks_correcao_v1_5/six_inline_reverse.png) e [configurações](measurements/headstocks_correcao_v1_5/settings_three_models.png). As telas mostram silêncio e E2 selecionada no modo manual; não simulam uma medição acústica.
+Capturas da Activity: [3 + 3](measurements/headstocks_correcao_visual/three_per_side.png), [6 em linha](measurements/headstocks_correcao_visual/six_inline.png), [invertido](measurements/headstocks_correcao_visual/six_inline_reverse.png) e [configurações](measurements/headstocks_correcao_visual/settings_three_models.png). As telas mostram silêncio e E2 selecionada no modo manual; não simulam uma medição acústica.
 
-APKs: `app/build/outputs/apk/debug/app-debug.apk` e `app/build/outputs/apk/release/app-release-unsigned.apk`. Tamanhos e SHA-256 estão em [validation.txt](measurements/headstocks_correcao_v1_5/validation.txt). O AVD temporário foi encerrado e removido ao final.
+APKs: `app/build/outputs/apk/debug/app-debug.apk` e `app/build/outputs/apk/release/app-release-unsigned.apk`. Tamanhos e SHA-256 estão em [validation.txt](measurements/headstocks_correcao_visual/validation.txt). O AVD temporário foi encerrado e removido ao final.
 
 Reprodução com JDK 17 e Android SDK 36:
 

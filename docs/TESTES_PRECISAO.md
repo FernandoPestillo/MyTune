@@ -1,13 +1,15 @@
-# Validação física de precisão — MyTune 1.1
+# Validação física de precisão — MyTune 1.0.0
 
-**Situação em 19/10/2026: não executada.** Não havia dispositivo Android físico nem guitarra disponíveis nesta implementação. Os resultados sintéticos estão em [PRECISAO_V1_1.md](PRECISAO_V1_1.md); emulador não comprova desempenho nem precisão acústica.
+> Registro de uma etapa interna da construção da Release inicial **1.0.0**. As medições e decisões abaixo descrevem o estado daquela etapa; os resultados consolidados do lançamento estão em [RELEASE_1_0_0.md](RELEASE_1_0_0.md).
+
+**Situação em 19/10/2026: não executada.** Não havia dispositivo Android físico nem guitarra disponíveis nesta implementação. Os resultados sintéticos estão em [PRECISAO.md](PRECISAO.md); emulador não comprova desempenho nem precisão acústica.
 
 ## Equipamentos e preparação
 
 - Celular Android físico com versão/modelo registrados; preferir ao menos dois aparelhos de fabricantes diferentes, incluindo um de entrada.
 - Guitarra elétrica (desplugada e/ou amplificada, registrar qual), violão/guitarra acústica, palheta e local silencioso. Repetir com ruído doméstico moderado, registrando sua origem.
 - Afinador de referência confiável em A4=440 Hz e afinação padrão. Para erro objetivo em cents, usar gerador de frequência conhecido com instrumento de medição/calibração ou referência que exporte frequência numérica e incerteza conhecida. Comparar dois ponteiros subjetivamente não mede erro absoluto.
-- Build debug 1.1, computador com ADB e Android Studio Profiler. Não gravar PCM nem adicionar logs de áudio bruto.
+- Build debug 1.0.0, computador com ADB e Android Studio Profiler. Não gravar PCM nem adicionar logs de áudio bruto.
 - Conceder microfone, manter app em primeiro plano, desativar economia de energia somente se isso for documentado como condição do teste. Registrar efeitos/source do evento `audio_capture`.
 - Afinar uma corda por vez, abafar as demais, selecionar a corda manualmente. Manter orientação, distância e intensidade constantes dentro de cada série.
 

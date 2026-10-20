@@ -1,0 +1,7 @@
+MyTune 1.0.0 — lintDebug: 0 erros; 6 avisos de dependências.
+GradleDependency: A newer version of androidx.core:core-ktx than 1.17.0 is available: 1.19.1
+GradleDependency: A newer version of androidx.activity:activity-compose than 1.11.0 is available: 1.13.0
+GradleDependency: A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.9.4 is available: 2.11.0
+GradleDependency: A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.9.4 is available: 2.11.0
+NewerVersionAvailable: A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.10.2 is available: 1.11.0
+NewerVersionAvailable: A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-test than 1.10.2 is available: 1.11.0

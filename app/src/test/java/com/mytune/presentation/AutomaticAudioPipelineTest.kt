@@ -42,7 +42,7 @@ class AutomaticAudioPipelineTest {
                 assertTrue(confirmedMs!! <= 250)
                 rows += "$rate,${string.label},$detuning,${selected!!.label},$measured,$error,$confirmedMs"
             }
-        File("build/reports/automatic/v1_2_pipeline.csv").apply {
+        File("build/reports/automatic/pipeline.csv").apply {
             parentFile!!.mkdirs(); writeText(rows.joinToString("\n") + "\n")
         }
     }

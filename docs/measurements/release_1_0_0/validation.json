@@ -1,0 +1,53 @@
+{
+  "versionName": "1.0.0",
+  "versionCode": 6,
+  "validated_at": "2026-10-20T13:52:07.949057-03:00",
+  "unit_tests": {
+    "passed": 106,
+    "failed": 0
+  },
+  "instrumented_tests": {
+    "passed": 22,
+    "failed": 0,
+    "seconds": 118.246
+  },
+  "lint": {
+    "errors": 0,
+    "existing_dependency_warnings": 6
+  },
+  "builds": [
+    "debug",
+    "androidTest",
+    "release-unsigned"
+  ],
+  "debug_apk_signature": "verified",
+  "update_without_uninstall": "passed",
+  "avd": "temporary; removed; original preserved",
+  "artifacts": [
+    {
+      "path": "app/build/outputs/apk/debug/app-debug.apk",
+      "bytes": 12292555,
+      "sha256": "efa2255dce9d800de452ed7899b78650cf22a9809af098b3cd20e780d421d09d"
+    },
+    {
+      "path": "app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk",
+      "bytes": 1187834,
+      "sha256": "cfe021d04000a6bdaebbbbe265b6dd219b40e26abbbc35f7a20a0777195542c2"
+    },
+    {
+      "path": "app/build/outputs/apk/release/app-release-unsigned.apk",
+      "bytes": 1846859,
+      "sha256": "ce43d98666925d1678cf5001c7b6c6f0c87e24708ee9851c1fc5f9fc1a28acd0"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/screenshots/tuner-landscape.png",
+      "sha256": "794312098a4c9f6cfa8d8e90a30ff683c51bed73346a97130579b1f731acf8bd"
+    },
+    {
+      "path": "docs/screenshots/tuner-portrait.png",
+      "sha256": "7d1896013514f22983fdc42acb661223bda33e88a1b0a4942fddcbf0e85f407b"
+    }
+  ]
+}

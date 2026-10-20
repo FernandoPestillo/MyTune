@@ -8,7 +8,7 @@ import com.mytune.domain.model.*
 import java.io.InputStream
 import java.io.OutputStream
 
-/** Independent from the v1.3 tuning library; uses the existing typed DataStore dependency. */
+/** Independent from the tuning library; uses the existing typed DataStore dependency. */
 object AppPreferencesSerializer : Serializer<AppPreferences> {
     override val defaultValue = AppPreferences()
     override suspend fun readFrom(input: InputStream): AppPreferences {

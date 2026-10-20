@@ -1,4 +1,4 @@
-> Histórico da versão anterior. Para a versão 1.1, consultar [PRECISAO_V1_1.md](PRECISAO_V1_1.md) e [TESTES_PRECISAO_V1_1.md](TESTES_PRECISAO_V1_1.md).
+> Histórico da primeira etapa de construção da Release inicial 1.0.0. Para a validação atual, consulte [RELEASE_1_0_0.md](RELEASE_1_0_0.md).
 
 # Validação
 
