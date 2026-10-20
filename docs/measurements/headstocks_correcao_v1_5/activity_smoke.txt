@@ -1,0 +1,4 @@
+3 + 3: seis controles completos, altura mínima 48 dp, E Standard mantida.
+6 em linha: seis controles completos, altura mínima 48 dp, E Standard mantida.
+6 em linha invertido: seis controles completos, altura mínima 48 dp, E Standard mantida.
+Force-stop/start: modelo invertido restaurado, seis controles à direita. Afinação E Standard preservada.

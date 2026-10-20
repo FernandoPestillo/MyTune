@@ -39,10 +39,15 @@ object InstrumentColors {
     val string = Color(0xFFDED5C4); val logo = Color(0xFFDDC7A9)
     val mapleEdge = Color(0xFFAF7B40); val maple = Color(0xFFE5BF80)
     val mapleLight = Color(0xFFF0D59D); val mapleGrain = Color(0xFF906434)
-    val graphiteEdge = Color(0xFF11151B); val graphite = Color(0xFF303740)
-    val graphiteOutline = Color(0xFF79838E); val darkString = Color(0xFF574A39)
+    val graphiteEdge = Color(0xFF080A0C); val graphite = Color(0xFF202328)
+    val graphiteOutline = Color(0xFF555B61); val darkString = Color(0xFF574A39)
     val steelLight = Color(0xFFE1E5E7); val steelMid = Color(0xFF929BA2)
     val screwSlot = Color(0xFF252B31)
+    val lacquer = Color(0xFF090A0C); val lacquerReflection = Color(0xFF26282B)
+    val binding = Color(0xFFE5C991); val goldDark = Color(0xFF67451C)
+    val gold = Color(0xFFBC8C3B); val goldLight = Color(0xFFFFE5A4)
+    val blackMetal = Color(0xFF090C0F); val blackMetalMid = Color(0xFF262C32)
+    val blackMetalLight = Color(0xFF626C75)
 }
 
 fun usesDarkTheme(mode: ThemeMode, systemDark: Boolean) = when (mode) {

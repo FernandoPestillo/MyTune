@@ -6,7 +6,7 @@ import kotlin.math.abs
 data class RelativePoint(val x: Float, val y: Float)
 data class RelativeBounds(val left: Float, val top: Float, val right: Float, val bottom: Float)
 enum class TunerSide(val direction: Float) { LEFT(-1f), RIGHT(1f) }
-enum class HeadstockFinish { DARK_WOOD, MAPLE, GRAPHITE }
+enum class HeadstockFinish { BLACK_GLOSS, MAPLE, GRAPHITE }
 
 sealed interface OutlineCommand {
     data class Move(val p: RelativePoint) : OutlineCommand
@@ -54,71 +54,76 @@ data class HeadstockGeometry(val type: HeadstockType, val designWidth: Float, va
             HeadstockType.SIX_INLINE -> sixInline
             HeadstockType.SIX_INLINE_REVERSE -> reverse
         }
-        private fun route(number: Int, x: Float, y: Float, side: TunerSide, nutY: Float): StringRoute {
+        private fun route(number: Int, x: Float, y: Float, side: TunerSide, nutY: Float, axle: Float = .17f): StringRoute {
             val nutX = mapOf(6 to .35f,5 to .41f,4 to .47f,3 to .53f,2 to .59f,1 to .65f).getValue(number)
-            return StringRoute(number,RelativePoint(x,y),RelativePoint(x+side.direction*.115f,y),side,
+            return StringRoute(number,RelativePoint(x,y),RelativePoint(x+side.direction*axle,y),side,
                 RelativePoint(nutX,nutY),RelativePoint(nutX,1f))
         }
-        private val threePerSide = HeadstockGeometry(HeadstockType.THREE_PER_SIDE,260f,440f,
+        private val threePerSide = HeadstockGeometry(HeadstockType.THREE_PER_SIDE,300f,440f,
             outline {
-                move(.23f,.115f)
-                cubic(.25f,.090f,.30f,.105f,.34f,.088f)
-                quad(.38f,.070f,.40f,.075f)
-                cubic(.44f,.065f,.46f,.040f,.50f,.040f)
-                cubic(.54f,.040f,.56f,.065f,.60f,.075f)
-                quad(.62f,.070f,.66f,.088f)
-                cubic(.70f,.105f,.75f,.090f,.77f,.115f)
-                line(.79f,.51f)
-                cubic(.79f,.61f,.71f,.68f,.65f,.73f)
-                line(.65f,1f);line(.35f,1f);line(.35f,.73f)
-                cubic(.29f,.68f,.21f,.61f,.21f,.51f)
+                move(.18f,.105f)
+                cubic(.29f,.122f,.36f,.075f,.42f,.065f)
+                quad(.47f,.050f,.50f,.045f)
+                quad(.53f,.050f,.58f,.065f)
+                cubic(.64f,.075f,.71f,.122f,.82f,.105f)
+                cubic(.80f,.25f,.78f,.44f,.81f,.59f)
+                cubic(.72f,.625f,.66f,.69f,.65f,.80f)
+                line(.65f,1f);line(.35f,1f);line(.35f,.80f)
+                cubic(.34f,.69f,.28f,.625f,.19f,.59f)
+                cubic(.22f,.44f,.20f,.25f,.18f,.105f)
                 close()
-            }, RelativeBounds(.09f,.025f,.91f,1.01f),HeadstockFinish.DARK_WOOD,
+            }, RelativeBounds(.035f,.025f,.965f,1.01f),HeadstockFinish.BLACK_GLOSS,
             listOf(
-                route(6,.31f,.59f,TunerSide.LEFT,.73f),
-                route(5,.29f,.38f,TunerSide.LEFT,.73f),
-                route(4,.27f,.17f,TunerSide.LEFT,.73f),
-                route(3,.73f,.17f,TunerSide.RIGHT,.73f),
-                route(2,.71f,.38f,TunerSide.RIGHT,.73f),
-                route(1,.69f,.59f,TunerSide.RIGHT,.73f),
-            ),.73f)
-        private val sixInline = HeadstockGeometry(HeadstockType.SIX_INLINE,300f,540f,
+                route(6,.30f,.56f,TunerSide.LEFT,.80f,.20f),
+                route(5,.30f,.385f,TunerSide.LEFT,.80f,.20f),
+                route(4,.30f,.21f,TunerSide.LEFT,.80f,.20f),
+                route(3,.70f,.21f,TunerSide.RIGHT,.80f,.20f),
+                route(2,.70f,.385f,TunerSide.RIGHT,.80f,.20f),
+                route(1,.70f,.56f,TunerSide.RIGHT,.80f,.20f),
+            ),.80f)
+        private val sixInline = HeadstockGeometry(HeadstockType.SIX_INLINE,380f,620f,
             outline {
-                move(.47f,.075f)
-                cubic(.49f,.025f,.61f,.020f,.67f,.040f)
-                cubic(.76f,.055f,.87f,.12f,.87f,.19f)
-                cubic(.87f,.25f,.79f,.285f,.71f,.30f)
-                cubic(.62f,.32f,.58f,.40f,.59f,.48f)
-                cubic(.60f,.63f,.68f,.73f,.65f,.83f)
+                move(.53f,.105f)
+                cubic(.55f,.035f,.64f,.008f,.73f,.022f)
+                cubic(.85f,.035f,.94f,.105f,.92f,.175f)
+                cubic(.91f,.235f,.86f,.257f,.79f,.280f)
+                cubic(.72f,.305f,.705f,.355f,.72f,.415f)
+                cubic(.73f,.50f,.80f,.61f,.805f,.655f)
+                cubic(.81f,.68f,.76f,.68f,.71f,.710f)
+                cubic(.675f,.737f,.654f,.775f,.65f,.80f)
+                line(.65f,1f);line(.35f,1f);line(.35f,.80f)
+                cubic(.33f,.775f,.265f,.75f,.22f,.71f)
+                cubic(.18f,.684f,.18f,.66f,.20f,.617f)
+                cubic(.29f,.475f,.40f,.275f,.53f,.105f)
+                close()
+            },RelativeBounds(.085f,.005f,.95f,1.01f),HeadstockFinish.MAPLE,
+            listOf(
+                route(6,.31f,.69f,TunerSide.LEFT,.80f),
+                route(5,.37f,.58f,TunerSide.LEFT,.80f),
+                route(4,.43f,.47f,TunerSide.LEFT,.80f),
+                route(3,.49f,.36f,TunerSide.LEFT,.80f),
+                route(2,.55f,.25f,TunerSide.LEFT,.80f),
+                route(1,.61f,.14f,TunerSide.LEFT,.80f),
+            ),.80f)
+        private val reverse = HeadstockGeometry(HeadstockType.SIX_INLINE_REVERSE,380f,660f,
+            outline {
+                move(.25f,.02f)
+                line(.51f,.125f);line(.82f,.685f)
+                line(.735f,.727f)
+                quad(.67f,.757f,.65f,.83f)
                 line(.65f,1f);line(.35f,1f);line(.35f,.83f)
-                quad(.28f,.81f,.30f,.74f)
-                line(.45f,.13f)
-                quad(.455f,.095f,.47f,.075f)
+                cubic(.34f,.737f,.26f,.67f,.14f,.615f)
+                quad(.12f,.605f,.145f,.58f)
+                cubic(.36f,.405f,.37f,.26f,.25f,.02f)
                 close()
-            },RelativeBounds(.19f,.005f,.90f,1.01f),HeadstockFinish.MAPLE,
+            },RelativeBounds(.11f,.005f,.985f,1.01f),HeadstockFinish.GRAPHITE,
             listOf(
-                route(6,.37f,.755f,TunerSide.LEFT,.83f),
-                route(5,.40f,.625f,TunerSide.LEFT,.83f),
-                route(4,.43f,.495f,TunerSide.LEFT,.83f),
-                route(3,.46f,.365f,TunerSide.LEFT,.83f),
-                route(2,.49f,.235f,TunerSide.LEFT,.83f),
-                route(1,.52f,.105f,TunerSide.LEFT,.83f),
-            ),.83f)
-        private val reverse = HeadstockGeometry(HeadstockType.SIX_INLINE_REVERSE,280f,540f,
-            outline {
-                move(.31f,.025f)
-                line(.57f,.10f);line(.75f,.76f);line(.65f,.83f)
-                line(.65f,1f);line(.35f,1f);line(.35f,.83f)
-                line(.30f,.68f);line(.33f,.47f);line(.29f,.29f)
-                close()
-            },RelativeBounds(.26f,.005f,.85f,1.01f),HeadstockFinish.GRAPHITE,
-            listOf(
-                route(6,.50f,.105f,TunerSide.RIGHT,.83f),
-                route(5,.53f,.235f,TunerSide.RIGHT,.83f),
-                route(4,.56f,.365f,TunerSide.RIGHT,.83f),
-                route(3,.59f,.495f,TunerSide.RIGHT,.83f),
-                route(2,.62f,.625f,TunerSide.RIGHT,.83f),
-                route(1,.65f,.755f,TunerSide.RIGHT,.83f),
+                route(6,.43f,.215f,TunerSide.RIGHT,.83f),
+                route(5,.485f,.31f,TunerSide.RIGHT,.83f),
+                route(4,.54f,.405f,TunerSide.RIGHT,.83f),
+                route(3,.595f,.50f,TunerSide.RIGHT,.83f),
+                route(2,.65f,.595f,TunerSide.RIGHT,.83f),
+                route(1,.705f,.69f,TunerSide.RIGHT,.83f),
             ),.83f)
     }
 }

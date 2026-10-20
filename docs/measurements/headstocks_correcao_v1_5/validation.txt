@@ -1,0 +1,14 @@
+MyTune v1.5 — correção visual
+2026-10-20T13:12:02.818447-03:00
+Base: e8b9e16; JDK Temurin 17.0.17; Android SDK 36
+testDebugUnitTest: 106/106 aprovados; lintDebug: 0 erros, 6 avisos preexistentes
+assembleDebug, assembleDebugAndroidTest e assembleRelease: sucesso
+Instrumentação completa: 22/22 aprovados em 85,752 s; Android 16/API 36.1 arm64
+Comparação larga adicional: 1/1 aprovado em 2,370 s
+MainActivity: seis controles completos nos três modelos, E Standard mantida, invertido restaurado após force-stop/start
+Auditoria: 30 arquivos de dados, domínio e apresentação sem alteração
+AVD temporário removido; AVD original e seus dados preservados
+
+app/build/outputs/apk/debug/app-debug.apk: 12360816 bytes; SHA-256 357da9ae759282a23131912e288a6fed4bb229c2db40c8000518e480f72c3ec8
+app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk: 1187834 bytes; SHA-256 cfe021d04000a6bdaebbbbe265b6dd219b40e26abbbc35f7a20a0777195542c2
+app/build/outputs/apk/release/app-release-unsigned.apk: 1846859 bytes; SHA-256 d6bf049e14ebda0c25e1738364758676849a039a95584089e155f3ca727de554

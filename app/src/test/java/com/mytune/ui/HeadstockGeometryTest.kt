@@ -38,7 +38,9 @@ class HeadstockGeometryTest {
         assertTrue(reverse.routes.all {it.side==TunerSide.RIGHT})
         assertNotEquals(normal.outline,reverse.outline)
         assertTrue(normal.outline.any {it is OutlineCommand.Cubic})
-        assertTrue(reverse.outline.none {it is OutlineCommand.Cubic || it is OutlineCommand.Quad})
+        // The reverse model keeps angular right edges and the reference's long curved left side.
+        assertTrue(reverse.outline.any {it is OutlineCommand.Cubic})
+        assertTrue(reverse.outline.any {it is OutlineCommand.Line})
     }
     @Test fun `uniform fit keeps hardware inside and accessible controls separated at different sizes`() {
         for(type in HeadstockType.entries) for(width in listOf(224f,272f,400f,700f)) for(control in listOf(58f,66f)) {
@@ -50,6 +52,12 @@ class HeadstockGeometryTest {
             g.routes.forEach {r->
                 val post=v.map(r.peg);val knob=v.map(r.knob)
                 for(p in listOf(post,knob)) assertTrue("$type $width $p",p.x in 0f..width && p.y in 0f..height)
+                // Include washer radius and the rotated paddle, not just their center points.
+                for((center,radius)in listOf(r.peg to 15f,r.knob to 23f)) {
+                    val p=v.map(center)
+                    assertTrue("Clipped hardware: $type $width",p.x-radius*v.scale>=0 && p.x+radius*v.scale<=width &&
+                        p.y-radius*v.scale>=0 && p.y+radius*v.scale<=height)
+                }
                 assertEquals(r.peg.x,v.inverse(post).x,.00001f);assertEquals(r.peg.y,v.inverse(post).y,.00001f)
                 assertTrue(centers.getValue(r.number)-control/2>=0)
                 assertTrue(centers.getValue(r.number)+control/2<=height)

@@ -29,13 +29,13 @@ A versão 1.4 foi adiada: A4 continua fixo em 440 Hz, sem modo cromático indepe
 
 Em **Ajustes**, escolha o headstock 3 + 3, 6 em linha ou 6 em linha invertido, com prévias vetoriais locais; tema Escuro, Claro ou Sistema; feedback tátil; e animação das cordas. O padrão preserva o 3+3 e o tema escuro. Preferências são gravadas em um DataStore tipado separado, usando a dependência existente, sem alterar a biblioteca de afinações da v1.3.
 
-Os três modelos permitem selecionar as seis cordas e acompanham a identificação automática e a afinação ativa. O desenho usa geometrias próprias, trajetos convencionais das cordas e escala uniforme compartilhada com o posicionamento e o toque. O modelo curvo usa madeira clara; o invertido tem ponta angular e acabamento grafite. Há transição entre modelos, destaque animado e vibração discreta apenas para sinal atual, válido e correspondente ao alvo. A animação termina após a perda de sinal e respeita a escala de animação do sistema. O feedback tátil confirma uma afinação por ciclo, com proteção contra oscilações e opção de desativar.
+Os três modelos permitem selecionar as seis cordas e acompanham a identificação automática e a afinação ativa. O desenho usa geometrias próprias, trajetos convencionais das cordas e escala uniforme compartilhada com o posicionamento e o toque. O 3+3 tem pintura preta com filete e ferragens douradas; o modelo curvo usa madeira clara e ferragens cromadas; o invertido tem ponta angular, curva longa à esquerda e acabamento preto com ferragens escuras. Há transição entre modelos, destaque animado e vibração discreta apenas para sinal atual, válido e correspondente ao alvo. A animação termina após a perda de sinal e respeita a escala de animação do sistema. O feedback tátil confirma uma afinação por ciclo, com proteção contra oscilações e opção de desativar.
 
 As cordas têm semântica de seleção, número/nota atuais, marca visual de confirmação e áreas de pelo menos 48 dp. A tela permite rolagem para manter o modelo em linha utilizável em telas pequenas e fontes ampliadas. Os temas centralizam cores Material 3 com contraste de texto verificado.
 
 Captura, YIN, classificador, referências, estabilizador, ViewModel e persistência da afinação permanecem os da v1.3. Consulte [EXPERIENCIA_VISUAL_V1_5.md](docs/EXPERIENCIA_VISUAL_V1_5.md) para arquitetura, arquivos, validação e limites físicos pendentes.
 
-O refinamento dos três modelos está documentado em [HEADSTOCKS_REFINAMENTO_V1_5.md](docs/HEADSTOCKS_REFINAMENTO_V1_5.md).
+A correção baseada na imagem de referência, com comparação lado a lado, está documentada em [HEADSTOCKS_CORRECAO_VISUAL_V1_5.md](docs/HEADSTOCKS_CORRECAO_VISUAL_V1_5.md). O [refinamento anterior](docs/HEADSTOCKS_REFINAMENTO_V1_5.md) permanece como histórico.
 
 ## Versão 1.3 — Afinações alternativas e personalizadas
 
