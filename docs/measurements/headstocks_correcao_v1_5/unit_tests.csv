@@ -1,0 +1,107 @@
+class,test,seconds,result
+com.mytune.data.audio.AudioBufferManagerTest,partial reads preserve chronological overlapping windows through many wraps,0.041,passed
+com.mytune.data.preferences.PreferencesRepositoryTest,every preference survives a real DataStore close and reopen without touching tuning library,0.301,passed
+com.mytune.data.preferences.PreferencesRepositoryTest,malformed fields fall back individually and valid fields survive,0.003,passed
+com.mytune.data.preferences.PreferencesRepositoryTest,legacy model identifiers keep all existing preferences and new reverse restores,0.014,passed
+com.mytune.data.tuning.TuningRepositoryTest,corrupt header missing selection and incomplete notes fall back without startup failure,0.005,passed
+com.mytune.data.tuning.TuningRepositoryTest,real DataStore creates edits restores and deletes active custom tuning,0.013,passed
+com.mytune.data.tuning.TuningRepositoryTest,selection persists and concurrent transactions do not lose unrelated custom items,0.053,passed
+com.mytune.data.tuning.TuningRepositoryTest,one invalid record is quarantined while valid tunings and selection survive rewriting,0.003,passed
+com.mytune.diagnostics.AudioPerformanceMetricsTest,disabled diagnostics never read a clock or emit reports,0.002,passed
+com.mytune.diagnostics.AudioPerformanceMetricsTest,monotonic durations rejection octave candidates queue and UI are independent,0.014,passed
+com.mytune.domain.audio.AlternatePitchDetectionTest,C2 D2 Eb2 E2 retain precision in clean harmonic and moderate noise cases,0.725,passed
+com.mytune.domain.audio.AlternatePitchDetectionTest,low notes and entire editor range are actually detected with harmonic and noisy signals,2.617,passed
+com.mytune.domain.audio.AlternatePitchDetectionTest,each preset classifies each open string and exact unisons remain ambiguous regardless of order,0.001,passed
+com.mytune.domain.audio.AlternatePitchDetectionTest,host window comparison records processing cost without claiming Android latency,2.904,passed
+com.mytune.domain.audio.AutomaticStringSelectorTest,rapid overlapping callbacks cannot confirm a selection,0.002,passed
+com.mytune.domain.audio.AutomaticStringSelectorTest,switching need not wait for retained old target and requires continuous evidence,0.001,passed
+com.mytune.domain.audio.AutomaticStringSelectorTest,plausible octave changes use longer evidence and sustained E4 remains selectable,0.0,passed
+com.mytune.domain.audio.AutomaticStringSelectorTest,invalid isolated octave and returning current string clear a pending change,0.0,passed
+com.mytune.domain.audio.AutomaticStringSelectorTest,gaps resets and inconsistent detuning cannot recycle stale confirmation,0.0,passed
+com.mytune.domain.audio.AutomaticStringSelectorTest,all six strings confirm after real elapsed evidence rather than callback count,0.001,passed
+com.mytune.domain.audio.GuitarStringClassifierTest,identification includes the boundary but never has an unlimited range,0.001,passed
+com.mytune.domain.audio.GuitarStringClassifierTest,injected overlapping references report ambiguity instead of using list order,0.001,passed
+com.mytune.domain.audio.GuitarStringClassifierTest,octaves are not folded into string targets,0.0,passed
+com.mytune.domain.audio.GuitarStringClassifierTest,malformed weak and unreliable detections have no candidate,0.0,passed
+com.mytune.domain.audio.GuitarStringClassifierTest,all six references and seven detunings are classified using cents,0.001,passed
+com.mytune.domain.audio.PitchSmootherTest,median and EMA reduce jitter without changing a stable note,0.002,passed
+com.mytune.domain.audio.PitchSmootherTest,octave jumps reset instead of passing through another note,0.0,passed
+com.mytune.domain.audio.PrecisionReferenceTest,host benchmark compares window sizes without a timing assertion,3.916,passed
+com.mytune.domain.audio.PrecisionReferenceTest,reference corpus measures clean detuning harmonics and noise,1.676,passed
+com.mytune.domain.audio.TuningCalculatorTest,another note or octave can never be in tune,0.002,passed
+com.mytune.domain.audio.TuningCalculatorTest,tolerance distinguishes sharp flat and tuned,0.0,passed
+com.mytune.domain.audio.TuningCalculatorTest,zero target is rejected,0.004,passed
+com.mytune.domain.audio.TuningCalculatorTest,standard tuning uses precise equal temperament frequencies,0.0,passed
+com.mytune.domain.audio.TuningCalculatorTest,cents are signed and logarithmic,0.0,passed
+com.mytune.domain.audio.TuningCalculatorTest,invalid frequency is rejected,0.0,passed
+com.mytune.domain.audio.TuningCalculatorTest,nearest note includes actual octave and accidentals,0.0,passed
+com.mytune.domain.audio.YinPitchDetectorTest,actual other notes and octaves remain detectable,0.008,passed
+com.mytune.domain.audio.YinPitchDetectorTest,silence DC offset and subthreshold audio have no pitch,0.001,passed
+com.mytune.domain.audio.YinPitchDetectorTest,too short windows fail explicitly,0.0,passed
+com.mytune.domain.audio.YinPitchDetectorTest,successive windows retain stable pitch across phase and mild noise,0.282,passed
+com.mytune.domain.audio.YinPitchDetectorTest,non finite input is rejected,0.001,passed
+com.mytune.domain.audio.YinPitchDetectorTest,broadband noise is rejected for insufficient confidence,0.039,passed
+com.mytune.domain.audio.YinPitchDetectorTest,DC offset does not alter pitch,0.005,passed
+com.mytune.domain.audio.YinPitchDetectorTest,strict confidence requirement rejects an otherwise periodic noisy signal,0.004,passed
+com.mytune.domain.audio.YinPitchDetectorTest,all six rounded reference tones at both sample rates are accurate within one cent,0.031,passed
+com.mytune.domain.audio.YinPitchDetectorTest,strong second harmonic does not cause octave errors,0.03,passed
+com.mytune.domain.audio.YinRobustnessTest,transients and slowly drifting nonperiodic signals do not invent pitches,0.013,passed
+com.mytune.domain.audio.YinRobustnessTest,harmonic decisions follow signal periodicity across phases not a selected string,0.222,passed
+com.mytune.domain.audio.YinRobustnessTest,light FIR improves measured broadband noise error without a temporal filter,0.591,passed
+com.mytune.domain.tuning.TuningModelTest,all nine presets have exact physical identities and MIDI targets,0.001,passed
+com.mytune.domain.tuning.TuningModelTest,validation rejects incomplete corrupt or unsupported targets but permits unison and unusual order,0.002,passed
+com.mytune.domain.tuning.TuningModelTest,frequency octave and enharmonic displays share one fixed reference,0.0,passed
+com.mytune.presentation.AudioPipelineTest,real YIN and presentation track sustain decay gaps and sustained note changes,0.208,passed
+com.mytune.presentation.AudioPipelineTest,stale tuned result requires reentry threshold on a new detection,0.0,passed
+com.mytune.presentation.AutomaticAudioPipelineTest,YIN classifier selector and presentation recognize all strings and seven detunings,0.825,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,silence of 200 and 800 ms retains target then timeout removes automatic highlight,0.02,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,tap in automatic mode becomes an explicit manual selection even on same string,0.004,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,sequential strings update target and result atomically before previous hold expires,0.006,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,invalid and out of range signals never select or renew an old reading,0.014,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,manual remains default and mode switches reuse the same capture,0.002,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,mode switch during detector callback rejects the in flight old mode window,0.003,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,alternating candidates never confirm or flap an existing selection,0.005,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,fast mode toggles and lifecycle discard partial automatic evidence,0.003,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,all references and detunings confirm the right target without correcting measured pitch,0.022,passed
+com.mytune.presentation.AutomaticTunerViewModelTest,isolated E3 or E4 reading never steals E2 selection,0.003,passed
+com.mytune.presentation.DetectionStabilizerTest,confirmed adjacent notes reset even below old eighty cent threshold,0.0,passed
+com.mytune.presentation.DetectionStabilizerTest,hysteresis enters at five and leaves beyond seven cents,0.0,passed
+com.mytune.presentation.DetectionStabilizerTest,flat sharp and exact target retain correct direction,0.0,passed
+com.mytune.presentation.DetectionStabilizerTest,expired reading and explicit reset both discard old smoothing and hysteresis,0.0,passed
+com.mytune.presentation.DetectionStabilizerTest,low confidence and malformed readings do not renew last valid time,0.0,passed
+com.mytune.presentation.DetectionStabilizerTest,timings and tolerance can be configured,0.0,passed
+com.mytune.presentation.DetectionStabilizerTest,isolated octave error is held and confirmed octave is never tuned or averaged,0.0,passed
+com.mytune.presentation.DetectionStabilizerTest,jitter is smoothed and constant detuning converges accurately,0.0,passed
+com.mytune.presentation.PreferencesViewModelTest,read error is visible and successful write updates UI after collector failed,0.008,passed
+com.mytune.presentation.PreferencesViewModelTest,disk write failure keeps old preference and a subsequent action recovers,0.002,passed
+com.mytune.presentation.PreferencesViewModelTest,rapid writes preserve all fields and publish committed preferences,0.002,passed
+com.mytune.presentation.TunerViewModelTest,selection during detection rejects the in-flight old-string buffer,0.005,passed
+com.mytune.presentation.TunerViewModelTest,late native startup callback cannot reactivate a paused screen,0.005,passed
+com.mytune.presentation.TunerViewModelTest,brief silence preserves pitch but updates raw signal and level,0.001,passed
+com.mytune.presentation.TunerViewModelTest,prolonged silence never invents a note,0.006,passed
+com.mytune.presentation.TunerViewModelTest,permission denial and granting again control capture,0.001,passed
+com.mytune.presentation.TunerViewModelTest,capture completing normally clears active result and expiry job,0.002,passed
+com.mytune.presentation.TunerViewModelTest,rapid pause resume releases recorder before opening another,0.002,passed
+com.mytune.presentation.TunerViewModelTest,selecting a string changes exact target and clears previous result,0.001,passed
+com.mytune.presentation.TunerViewModelTest,rapid selections remain manual and next frame uses latest target,0.001,passed
+com.mytune.presentation.TunerViewModelTest,smoothing never keeps green when the actual pitch leaves tolerance,0.001,passed
+com.mytune.presentation.TunerViewModelTest,capture failure is shown and permits retry,0.002,passed
+com.mytune.presentation.TunerViewModelTest,revoked permission during capture becomes recoverable UI state,0.001,passed
+com.mytune.presentation.TunerViewModelTest,clock holds fades and expires pitch even if no more buffers arrive,0.002,passed
+com.mytune.presentation.TunerViewModelTest,new detection during hold refreshes without empty result,0.002,passed
+com.mytune.presentation.TunerViewModelTest,pause cancels expiry and resume never restores old result,0.002,passed
+com.mytune.presentation.TuningFeedbackPolicyTest,success pulses once and boundary jitter never rearms it,0.01,passed
+com.mytune.presentation.TuningFeedbackPolicyTest,no feedback or string vibration for invalid held wrong target or inactive signals,0.001,passed
+com.mytune.presentation.TuningFeedbackPolicyTest,silence new target and changed tuning start new cycles but short interruptions do not,0.0,passed
+com.mytune.presentation.TuningFeedbackPolicyTest,enable is not success and cooldown prevents rapid target changes from buzzing,0.0,passed
+com.mytune.presentation.TuningViewModelTest,serialized rapid changes and older emissions cannot restore an outdated tuning,0.007,passed
+com.mytune.presentation.TuningViewModelTest,all presets reclassify every string without waiting for old hold or restarting capture,0.015,passed
+com.mytune.presentation.TuningViewModelTest,failed persistence preserves library and reports a recoverable error without stopping audio,0.003,passed
+com.mytune.presentation.TuningViewModelTest,restored tuning loads before any pitch is applied and recovery does not clear valid data,0.002,passed
+com.mytune.presentation.TuningViewModelTest,tuning change during detection rejects the old tuning window,0.002,passed
+com.mytune.presentation.TuningViewModelTest,custom creation edits renames and active deletion persist and invalidate incompatible results,0.002,passed
+com.mytune.presentation.TuningViewModelTest,unison and near pitches never choose arbitrary automatic strings but manual still works,0.001,passed
+com.mytune.presentation.TuningViewModelTest,all nine tunings preserve physical manual selection and calculate current targets,0.085,passed
+com.mytune.ui.HeadstockGeometryTest,three silhouettes map every physical string to its conventional post,0.008,passed
+com.mytune.ui.HeadstockGeometryTest,themes follow explicit or system choice and text colors maintain contrast,0.022,passed
+com.mytune.ui.HeadstockGeometryTest,uniform fit keeps hardware inside and accessible controls separated at different sizes,0.006,passed

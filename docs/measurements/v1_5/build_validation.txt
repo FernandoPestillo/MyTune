@@ -1,0 +1,8 @@
+2026-10-19; JDK 17
+./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest assembleRelease --max-workers=2 --console=plain
+BUILD SUCCESSFUL in 1m 23s
+Unit tests: 105/105; instrumentados: 19/19 (log separado)
+Lint: 0 erros, 6 avisos de versões (4 GradleDependency, 2 NewerVersionAvailable)
+SHA256 app/build/outputs/apk/debug/app-debug.apk f7ff72aa809d5a02152fe8c1d4e3c26a5c37bf0a7356d8f61bc9c66b8dcb8bc5
+SHA256 app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk ef0264178589cd64fddfcea23178e9fa2be7fc56864de21f4a87fd9bbb962900
+SHA256 app/build/outputs/apk/release/app-release-unsigned.apk fcc2d2cf5de1b1af615a596aed2c8f7dbfa89f27327113f1805006189129cf87

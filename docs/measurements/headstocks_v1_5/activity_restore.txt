@@ -1,0 +1,12 @@
+2026-10-20; MainActivity real no AVD Android 16/API 36.1 arm64
+Seleção pela UI dos três modelos, mantendo Drop C e sua sexta corda C2.
+Capturas com seis controles completos para os dois modelos em linha.
+Force-stop/start restaurou o modelo invertido (controles à direita) e Drop C.
+Preferências preservadas:
+mytune-appearance-v1
+headstock=SIX_INLINE_REVERSE
+theme=DARK
+haptics=true
+stringAnimation=true
+
+Sem injeção de repositório nesta verificação.

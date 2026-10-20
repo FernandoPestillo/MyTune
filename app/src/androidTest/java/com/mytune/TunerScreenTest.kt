@@ -13,6 +13,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mytune.domain.model.*
+import com.mytune.domain.tuning.*
 import com.mytune.presentation.TunerUiState
 import com.mytune.presentation.ReadingStatus
 import com.mytune.domain.audio.SignalQuality
@@ -36,7 +37,7 @@ class TunerScreenTest {
         for (string in StandardTuning.strings) {
             compose.onNodeWithContentDescription("${string.number}ª corda, ${string.label}")
                 .performScrollTo().performClick().assertIsSelected()
-            compose.onAllNodes(isSelected()).assertCountEquals(1)
+            compose.onAllNodes(isSelected() and hasAnyAncestor(hasTestTag("guitarSection"))).assertCountEquals(1)
             compose.onNodeWithText("${string.number}ª CORDA · ${string.label}").assertExists()
         }
         compose.onNodeWithText("— Hz").assertExists()
@@ -73,23 +74,35 @@ class TunerScreenTest {
                 }
             }
         }
-        val tags = listOf("tunerPanel", "noteDisplay", "tuningIndicator", "tuningStatus", "guitarSection")
+        val tags = listOf("tuningSelector", "tuningModeSelector", "tunerPanel", "tunerTargetRow", "targetFrequency", "noteDisplay", "tuningIndicator", "tuningStatus", "guitarSection")
         compose.waitForIdle()
         val original = tags.associateWith { compose.onNodeWithTag(it).getUnclippedBoundsInRoot() }
         val states = listOf(80.0, 84.0, 82.406889, 110.0, 164.813778, 69.295658, 1100.0).map {
-            base.copy(result = TuningCalculator.calculate(it, base.selectedString, .99), readingStatus = ReadingStatus.ACTIVE)
+            base.copy(result = TuningCalculator.calculate(it, base.selectedString!!, .99), readingStatus = ReadingStatus.ACTIVE)
         }.let { readings -> readings + listOf(
             readings[0].copy(readingStatus = ReadingStatus.HELD),
             readings[0].copy(readingStatus = ReadingStatus.STALE),
             base.copy(signalQuality = SignalQuality.UNRELIABLE), base) +
-            StandardTuning.strings.map { base.copy(selectedString = it) }
+            StandardTuning.strings.map { base.copy(selectedString = it) } +
+            TuningPresets.all.map { base.copy(activeTuning = it, selectedString = it.string(6)) } +
+            listOf(base.copy(activeTuning = TuningValidator.custom("long", "Afinação personalizada com um nome muito longo para caber", listOf(40,45,50,55,59,64)))) + listOf(
+                base.copy(tuningMode = TuningMode.AUTOMATIC, selectedString = null),
+                base.copy(tuningMode = TuningMode.AUTOMATIC, selectedString = null,
+                    automaticSelectionStatus = AutomaticSelectionStatus.CONFIRMING),
+                base.copy(tuningMode = TuningMode.AUTOMATIC, selectedString = null,
+                    automaticSelectionStatus = AutomaticSelectionStatus.UNCERTAIN,
+                    stringClassification = StringDetectionResult(StringClassificationStatus.NO_MATCH)),
+                readings[2].copy(tuningMode = TuningMode.AUTOMATIC,
+                    automaticSelectionStatus = AutomaticSelectionStatus.TRACKING),
+                readings[2].copy(tuningMode = TuningMode.AUTOMATIC, readingStatus = ReadingStatus.HELD),
+                readings[2].copy(tuningMode = TuningMode.AUTOMATIC, readingStatus = ReadingStatus.STALE))
         }
         states.forEach { next ->
             compose.runOnIdle { state = next }
             compose.waitForIdle()
+            val current = tags.associateWith { compose.onNodeWithTag(it).getUnclippedBoundsInRoot() }
             tags.forEach { tag ->
-                assertEquals("$tag moved for $next", original.getValue(tag),
-                    compose.onNodeWithTag(tag).getUnclippedBoundsInRoot())
+                assertEquals("$tag tuning=${next.activeTuning.id} before=$original after=$current", original.getValue(tag), current.getValue(tag))
             }
             val textLayouts = mutableListOf<TextLayoutResult>()
             compose.onNodeWithTag("detectedFrequency").performSemanticsAction(SemanticsActions.GetTextLayoutResult) {
@@ -100,14 +113,15 @@ class TunerScreenTest {
     }
 
     @Test fun staleReadingIsLabeledAndExpirationRemovesTuningStatus() {
-        val result = TuningCalculator.calculate(80.5, StandardTuning.strings.first(), .99)
+        val result = TuningCalculator.calculate(StandardTuning.strings.first().frequency, StandardTuning.strings.first(), .99)
         var state by mutableStateOf(TunerUiState(hasPermission = true, microphoneActive = true,
             result = result, readingStatus = ReadingStatus.STALE))
         compose.setContent { MyTuneTheme { TunerScreen(state, {}, {}) } }
-        compose.onNodeWithText("Aperte a corda · Sem atualização").assertExists()
+        compose.onNodeWithText("Última leitura · Sem atualização").assertExists()
+        compose.onNodeWithText("Afinada", substring = true).assertDoesNotExist()
         compose.runOnIdle { state = state.copy(result = null, readingStatus = ReadingStatus.ABSENT) }
         compose.onNodeWithText("Aguardando áudio").assertExists()
-        compose.onNodeWithText("Aperte a corda · Sem atualização").assertDoesNotExist()
+        compose.onNodeWithText("Última leitura · Sem atualização").assertDoesNotExist()
         compose.onNodeWithText("CENTS").assertExists()
     }
 

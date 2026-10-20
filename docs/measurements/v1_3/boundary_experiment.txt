@@ -1,0 +1,2 @@
+Initial exploratory range B1–B5 (MIDI 35–83), before restricting the editor.
+java.lang.AssertionError: 48000 midi=81 error=-1199.990488407581

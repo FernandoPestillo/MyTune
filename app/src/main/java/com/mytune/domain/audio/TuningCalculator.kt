@@ -1,11 +1,11 @@
 package com.mytune.domain.audio
 
 import com.mytune.domain.model.*
+import com.mytune.domain.tuning.PitchFrequencyCalculator
 import kotlin.math.*
 
 object TuningCalculator {
     const val TOLERANCE_CENTS = 5.0
-    private val names = arrayOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")
 
     fun cents(frequency: Double, target: Double): Double {
         require(frequency.isFinite() && frequency > 0 && target.isFinite() && target > 0)
@@ -14,8 +14,8 @@ object TuningCalculator {
 
     fun note(frequency: Double): DetectedNote {
         require(frequency.isFinite() && frequency > 0)
-        val midi = (69 + 12 * log2(frequency / 440.0)).roundToInt()
-        return DetectedNote(names[Math.floorMod(midi, 12)], Math.floorDiv(midi, 12) - 1, midi)
+        val midi = PitchFrequencyCalculator.midi(frequency)
+        return DetectedNote(PitchFrequencyCalculator.name(midi), PitchFrequencyCalculator.octave(midi), midi)
     }
 
     fun calculate(frequency: Double, target: GuitarStringNote, confidence: Double): TuningResult {

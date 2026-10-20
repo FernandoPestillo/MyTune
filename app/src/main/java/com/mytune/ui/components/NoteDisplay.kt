@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,7 +46,7 @@ private fun DetectedNote(state: TunerUiState) {
         StableText(result?.note?.name ?: "—",
             listOf("—", "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"),
             TextStyle(fontSize = 82.sp, fontWeight = FontWeight.Light,
-                color = if (result?.status == TuningStatus.IN_TUNE) Green else Foreground,
+                color = if (result?.status == TuningStatus.IN_TUNE && state.hasTuningGuidance) Green else Foreground,
                 letterSpacing = (-4).sp, lineHeight = 100.sp), maxLines = 1, softWrap = false)
         StableText(result?.note?.octave?.toString() ?: " ", (0..9).map { it.toString() },
             TextStyle(color = Muted, fontSize = 28.sp), Modifier.padding(start = 5.dp, top = 32.dp),
@@ -63,7 +64,8 @@ private fun FrequencyDisplay(state: TunerUiState, modifier: Modifier) {
             fontSize = 23.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.End,
             style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false)
         Spacer(Modifier.height(7.dp))
-        Text("Alvo ${state.selectedString.label} · ${hz(state.selectedString.frequency)} Hz", color = Muted,
-            fontSize = 11.sp, style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, softWrap = false)
+        Text(state.selectedString?.let { "Alvo ${it.label} · ${hz(it.frequency)} Hz" } ?: "Alvo —", Modifier.fillMaxWidth().height(with(LocalDensity.current) { 20.sp.toDp() }).testTag("targetFrequency"), color = Muted,
+            fontSize = 11.sp, textAlign = TextAlign.End, style = TextStyle(fontFeatureSettings = "tnum", lineHeight = 16.sp,
+                platformStyle = PlatformTextStyle(includeFontPadding = false)), maxLines = 1, softWrap = false)
     }
 }

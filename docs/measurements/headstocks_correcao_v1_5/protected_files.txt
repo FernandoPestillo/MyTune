@@ -1,0 +1,32 @@
+Comparação SHA-256 com a base e8b9e16: 30 arquivos de dados, domínio e apresentação sem alteração.
+
+ce9856c64e010aadf5e582417c30d4e9ed6f2957084a3e43989903cda2c92188  app/src/main/java/com/mytune/data/audio/AudioBufferManager.kt
+4605652ec6d82891e357392888a4ebe5a745c28b2b28a9a235017de55c5522fc  app/src/main/java/com/mytune/data/audio/AudioCaptureManager.kt
+fd1134c7b45b4efa290afb5cfd1c0d98374da948e02e2d3b475443ce9a5e2358  app/src/main/java/com/mytune/data/audio/AudioCaptureSource.kt
+089f93b71c0f6d385c5b76f0284a56370536f356aeec1cddc78867893b52bb41  app/src/main/java/com/mytune/data/preferences/PreferencesRepository.kt
+9632eaf2d9efa8e770cb434b07da9e73ae9fcf505038372de313aa0412a37456  app/src/main/java/com/mytune/data/tuning/TuningRepository.kt
+85b9505b3289a2fc17b8962484120ce38e67542c296dcfa75a08a4c4349ce18b  app/src/main/java/com/mytune/data/tuning/TuningSettings.kt
+76d39d54e005507f2fd9efacd45506d6f84f1704935471a6095d766c81999e83  app/src/main/java/com/mytune/data/tuning/TuningSettingsSerializer.kt
+0890656b3e4ee8b4006415bfa293e4ddecfe74b80a87d30b1ef9aa067d596c03  app/src/main/java/com/mytune/data/tuning/TuningStorage.kt
+8f783de5a7cf354d92d32c17a776a48b450c642ba6710f5d9e48a1f99967f010  app/src/main/java/com/mytune/domain/audio/AudioProcessingConfig.kt
+b8dacbb209187b2930c8d9ea4637dc4ce1a36bc24d6a6fb899457d3affb59a77  app/src/main/java/com/mytune/domain/audio/AutomaticStringSelector.kt
+a75fb491cfdab0527f6da92cadfa01bc3b12b6377d2dfbb35b4bfaf8e2eeb6dc  app/src/main/java/com/mytune/domain/audio/GuitarStringClassifier.kt
+c549c675258d320e83ca7c2277e82783b1d7cb1369a875c1065141b4ef9d7b35  app/src/main/java/com/mytune/domain/audio/PitchDetector.kt
+c6f81c6f05b14dcda60fda1233387ea990cccb0b1bb9ac50c2219a961e3de571  app/src/main/java/com/mytune/domain/audio/PitchSmoother.kt
+2db6c549b43c3f5e4e157c82dc9b49c9049d3f93219852de7048480dd43a7682  app/src/main/java/com/mytune/domain/audio/TuningCalculator.kt
+fa3f33c7f0e41fd5ce5aa1aac3441ee40a152c4aa7668058816873e7fb19f4a9  app/src/main/java/com/mytune/domain/audio/YinPitchDetector.kt
+83495ad046ad0cfa8247e5227d1372372b45fa3bea1f65d940ff8469ecf87e56  app/src/main/java/com/mytune/domain/model/AppPreferences.kt
+495f76194a2b5303b65b220f4b834f0adb8e27a87473b7c1766c4ab445f78c24  app/src/main/java/com/mytune/domain/model/DetectedNote.kt
+2b2340a421a3db8f9c939625c038a921007341bdd8bc3c66221a7a52ed6a1cd7  app/src/main/java/com/mytune/domain/model/GuitarStringNote.kt
+3b3dc420e28ff0673af9f4134dcf277bc93b0093bdd23e8fd1c5c1dcec3c6e1c  app/src/main/java/com/mytune/domain/model/GuitarTuning.kt
+114578a018de4494e6d59eb4e75d63ee8aa465fdb1c2284aadb8d38da4d28096  app/src/main/java/com/mytune/domain/model/StringDetectionResult.kt
+ae2c856c7b21b0d9423f9260ba23742e8d1380378ea2b61cc9460050c46c30c1  app/src/main/java/com/mytune/domain/model/TuningMode.kt
+36494a6b64f97a9be883921282d3824cb82f1db65a277f15a44cec6ff8b8fdad  app/src/main/java/com/mytune/domain/model/TuningResult.kt
+4d0d3098dfd23bf9baae4d47572eccbf7266ca2b4be885d6c7a53b17f83a574b  app/src/main/java/com/mytune/domain/tuning/PitchFrequencyCalculator.kt
+55f69e67f3d6c2c9d643732996008b35f309b33e6227d2abe7e58bfcdbb52aa9  app/src/main/java/com/mytune/domain/tuning/TuningPresets.kt
+0bfa1f0368156367d4a860ce0b8f6025801c75198bc85cc10575c503f5843af5  app/src/main/java/com/mytune/domain/tuning/TuningValidator.kt
+5bcc0a9b12add70c3c19bedd8dc901e30f7c749b19d79f761d79df5236b17829  app/src/main/java/com/mytune/presentation/DetectionPresentation.kt
+49af4e2bd37f7e00e3a68bf8a76791be7a079fd2e38b4eae3edbedc5eb6bd212  app/src/main/java/com/mytune/presentation/PreferencesViewModel.kt
+413ac5a2e75d0c919f5fa54f6a14c7dd3806d9087eab8482e71f4fbebb476119  app/src/main/java/com/mytune/presentation/TunerUiState.kt
+bddac43cff833c38f7d921f59e5be17c1e27d519fe43d24285780035e5f020be  app/src/main/java/com/mytune/presentation/TunerViewModel.kt
+17625db015676565a3a517d9a261d6878bd6fca8e7f433515110d4977860dea6  app/src/main/java/com/mytune/presentation/TuningFeedbackPolicy.kt

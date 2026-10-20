@@ -1,3 +1,5 @@
+> Histórico da versão anterior. Para a versão 1.1, consultar [PRECISAO_V1_1.md](PRECISAO_V1_1.md) e [TESTES_PRECISAO_V1_1.md](TESTES_PRECISAO_V1_1.md).
+
 # Validação
 
 ## Correções de estabilidade e retenção — 14/10/2026
