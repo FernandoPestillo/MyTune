@@ -1,8 +1,18 @@
 # MyTune
 
+![MyTune — Guitar Tuner App](docs/images/mytune-banner.webp)
+
 Afinador de guitarra Android nativo, offline, em Kotlin e Jetpack Compose. O microfone fornece PCM real ao algoritmo YIN; não há áudio simulado, backend, cadastro, rede nem gravação de arquivos no aplicativo.
 
 [Interface em retrato](docs/screenshots/tuner-portrait.png) · [Interface em paisagem](docs/screenshots/tuner-landscape.png)
+
+## Baixar o APK
+
+[**Baixar MyTune v1.5.0 para Android**](https://github.com/FernandoPestillo/MyTune/releases/download/v1.5.0/MyTune-v1.5.0-debug.apk)
+
+APK de testes (debug), assinado com chave de desenvolvimento, compatível com Android **8.0 / API 26** ou superior. Baixe o arquivo no aparelho, abra-o para instalar e conceda acesso ao microfone ao iniciar o afinador.
+
+O APK corresponde ao código integrado à `main`. As notas da versão e o arquivo de verificação SHA-256 estão na [Release v1.5.0](https://github.com/FernandoPestillo/MyTune/releases/tag/v1.5.0).
 
 ## Executar
 
